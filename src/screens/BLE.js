@@ -56,7 +56,6 @@ const BLE = ({
   id = [dataSplited[0]].map(item => parseInt(item));
   interval = [dataSplited[1]].map(item => parseInt(item));
   time = Math.round((id * (interval / 1000)) / 60);
-  console.log(time);
   steps = [dataSplited[2]];
   log = [dataSplited[3]];
   lat = [dataSplited[4]];
@@ -70,6 +69,8 @@ const BLE = ({
   run_acc_avg = [dataSplited[12]];
   run_acc_max = [dataSplited[13]];
   deviceName = [dataSplited[14]].toString().substring(13);
+  batteryRaw = [dataSplited[15]].toString();
+  battery = parseInt(batteryRaw);
   calories = Math.round(steps * 0.03);
   caloriesTarget = 200;
   distance = (Math.floor(steps * 0.85) / 1000).toFixed(2);
@@ -168,8 +169,25 @@ const BLE = ({
                 <Text style={styles.header__text}>Dashboard</Text>
                 <Text style={styles.device__id}>Device code: {deviceName}</Text>
               </View>
-
               {/* BATTERY UI */}
+              <View style={styles.battery__container}>
+                <Text style={styles.battery__number}>{battery}%</Text>
+                <View style={styles.battery__charge}>
+                  {battery > 20 ? (
+                    <View
+                      style={[
+                        styles.box__notcharge,
+                        {width: `${battery}%`, height: '100%', borderRadius: 2},
+                      ]}></View>
+                  ) : (
+                    <View
+                      style={[
+                        styles.box__incharge,
+                        {width: `${battery}%`, height: '100%', borderRadius: 2},
+                      ]}></View>
+                  )}
+                </View>
+              </View>
             </View>
             <ScrollView>
               <View style={styles.content}>
@@ -788,6 +806,29 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#FFF',
   },
+  battery__container: {
+    position: 'relative',
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  battery__number: {
+    color: '#FFF',
+    fontSize: res * 0.015,
+    fontWeight: '900',
+  },
+  battery__charge: {
+    width: res * 0.04,
+    height: res * 0.015,
+    backgroundColor: '#BDBDBD',
+    borderRadius: 2,
+  },
+  box__notcharge: {
+    backgroundColor: '#388E3C',
+  },
+  box__incharge: {
+    backgroundColor: '#FB8C00',
+  },
   stat__container: {
     width: '100%',
     height: '100%',
@@ -888,14 +929,14 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   stat__name: {
-    fontSize: res * 0.019,
+    fontSize: res * 0.018,
     color: '#FFF',
-    fontWeight: '900',
+    fontWeight: '600',
     marginLeft: res * 0.015,
   },
   spotlight__text: {
-    fontSize: res * 0.025,
-    color: '#FFF',
+    // fontSize: res * 0.025,
+    // color: '#FFF',
   },
   stat__jump: {
     alignItems: 'center',
@@ -917,7 +958,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   spotlight__number: {
-    fontSize: res * 0.06,
+    fontSize: res * 0.05,
     color: '#E79C25',
   },
   bottom__name: {
