@@ -12,7 +12,7 @@ const res = Dimensions.get('window').height;
 
 //LOGO
 import player from '../../assets/images/player.png';
-import field from '../../assets/images/field.png';
+// import field from '../../assets/images/field.png';
 import ball from '../../assets/images/flying_ball.png';
 
 const SplashScreen = ({navigation}) => {
@@ -54,11 +54,11 @@ const SplashScreen = ({navigation}) => {
           source={ball}
           style={[styles.ball, {transform: [{translateX: ballMove}]}]}
         />
-        <Animated.Image
+        {/* <Animated.Image
           source={field}
           style={[styles.field, {transform: [{translateY: fieldMove}]}]}
-        />
-        <Text style={styles.app__version}>version 1.0.5</Text>
+        /> */}
+        <Text style={styles.app__version}>version 1.0.6</Text>
       </View>
     </View>
   );

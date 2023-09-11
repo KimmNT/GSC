@@ -6,16 +6,17 @@ import {
   View,
   Image,
   Animated,
+  Easing,
   ScrollView,
   Alert,
   Dimensions,
   Platform,
 } from 'react-native';
 import DeviceModal from './components/DeviceConnectionModal';
+import Loading from './components/Loading';
 import useBLE from '../../useBLE';
 import Svg, {G, Circle} from 'react-native-svg';
 import MapView, {Heatmap, Marker} from 'react-native-maps';
-import {BleManager} from 'react-native-ble-plx';
 
 const res = Dimensions.get('window').height;
 
@@ -24,6 +25,7 @@ import welcomeBG from '../../assets/images/welcome_bg.png';
 import Logo from '../../assets/images/logo.png';
 import BackGround from '../../assets/images/background.png';
 import Jump1 from '../../assets/images/jump.png';
+import Medal from '../../assets/images/medal.png';
 
 //ICON
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -34,7 +36,7 @@ const BLE = ({
   radius = 60,
   strokeWidth = 20,
   color = '#E79C25',
-  max = 200,
+  max = 500,
 }) => {
   const {
     requestPermissions,
@@ -51,7 +53,6 @@ const BLE = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   //split the data
-
   const dataSplited = data.split('|');
   id = [dataSplited[0]].map(item => parseInt(item));
   interval = [dataSplited[1]].map(item => parseInt(item));
@@ -62,9 +63,9 @@ const BLE = ({
   acceleration = [dataSplited[5]];
   jumps = [dataSplited[6]];
   jumpspeed = [dataSplited[7]];
-  run = [dataSplited[8]];
-  run_avg = [dataSplited[9]];
-  run_max = [dataSplited[10]];
+  run = ([dataSplited[8]] * 3.6).toFixed(2);
+  run_avg = ([dataSplited[9]] * 3.6).toFixed(2);
+  run_max = ([dataSplited[10]] * 3.6).toFixed(2);
   run_acc = [dataSplited[11]];
   run_acc_avg = [dataSplited[12]];
   run_acc_max = [dataSplited[13]];
@@ -72,8 +73,8 @@ const BLE = ({
   batteryRaw = [dataSplited[15]].toString();
   battery = parseInt(batteryRaw);
   calories = Math.round(steps * 0.03);
-  caloriesTarget = 200;
-  distance = (Math.floor(steps * 0.85) / 1000).toFixed(2);
+  caloriesTarget = 500;
+  distance = (Math.floor(steps * 0.2) / 1000).toFixed(2);
 
   //CLOCK
   const [clock, setClock] = useState(new Date());
@@ -210,10 +211,16 @@ const BLE = ({
                               </View>
                               <Text style={styles.stat__name}>Time</Text>
                             </View>
-                            <View style={styles.item__number}>
-                              <Text style={styles.number}>{time}</Text>
-                              <Text style={styles.unit}>mins</Text>
-                            </View>
+                            {data.length > 15 ? (
+                              <View style={styles.item__number}>
+                                <Text style={styles.number}>{time}</Text>
+                                <Text style={styles.unit}>mins</Text>
+                              </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <Loading />
+                              </View>
+                            )}
                           </View>
                         </View>
                         {/* ITEM - STEPS */}
@@ -242,22 +249,28 @@ const BLE = ({
                               </Text>
                             </View>
                             {/* STAT NUMBER */}
-                            <View style={styles.item__number}>
-                              <Text
-                                style={[
-                                  styles.number,
-                                  styles.spotlight__number,
-                                ]}>
-                                {steps}
-                              </Text>
-                              <Text
-                                style={[styles.unit, styles.spotlight__text]}>
-                                steps
-                              </Text>
-                            </View>
+                            {data.length > 15 ? (
+                              <View style={styles.item__number}>
+                                <Text
+                                  style={[
+                                    styles.number,
+                                    styles.spotlight__number,
+                                  ]}>
+                                  {steps}
+                                </Text>
+                                <Text
+                                  style={[styles.unit, styles.spotlight__text]}>
+                                  steps
+                                </Text>
+                              </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <Loading />
+                              </View>
+                            )}
                           </View>
                         </View>
-                        {/* ITEM - SPRINT */}
+                        {/* ITEM - FLEXIBILITY */}
                         <View style={[styles.stat__item, styles.break]}>
                           {/* STAT ITEM CONTENT */}
                           <View style={[styles.stat__item_content]}>
@@ -273,18 +286,23 @@ const BLE = ({
                                   style={[styles.icon, styles.sprint]}
                                 />
                               </View>
-                              <Text style={styles.stat__name}>
-                                Acceleration
-                              </Text>
+                              <Text style={styles.stat__name}>Flexibility</Text>
                             </View>
                             {/* STAT NUMBER */}
-                            <View style={styles.item__number}>
-                              <Text style={styles.number}>{acceleration}</Text>
-                              <View style={styles.unit__square}>
-                                <Text style={styles.unit}>AVG m/s</Text>
-                                <Text style={styles.square}>2</Text>
+                            {data.length > 15 ? (
+                              <View style={styles.item__number}>
+                                <Text style={styles.number}>
+                                  {acceleration}
+                                </Text>
+                                <View style={styles.unit__square}>
+                                  <Text style={styles.unit}></Text>
+                                </View>
                               </View>
-                            </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <Loading />
+                              </View>
+                            )}
                           </View>
                         </View>
                         {/* ITEM - JUMP */}
@@ -303,10 +321,16 @@ const BLE = ({
                               <Text style={styles.stat__name}>Jump</Text>
                             </View>
                             {/* STAT NUMBER */}
-                            <View style={styles.item__number}>
-                              <Text style={styles.number}>{jumps}</Text>
-                              <Text style={styles.unit}>jumps</Text>
-                            </View>
+                            {data.length > 15 ? (
+                              <View style={styles.item__number}>
+                                <Text style={styles.number}>{jumps}</Text>
+                                <Text style={styles.unit}>jumps</Text>
+                              </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <Loading />
+                              </View>
+                            )}
                           </View>
                         </View>
                       </View>
@@ -340,53 +364,66 @@ const BLE = ({
                               </Text>
                             </View>
                             {/* STAT NUMBER */}
-                            <View style={styles.item__number}>
-                              <View>
-                                <Svg
-                                  width={radius * 2}
-                                  height={radius * 2}
-                                  viewBox={`0 0 ${halfCircle * 2} ${
-                                    halfCircle * 2
-                                  }`}>
-                                  <G
-                                    rotation="-90"
-                                    origin={`${halfCircle},${halfCircle}`}>
-                                    <Circle
-                                      cx="50%"
-                                      cy="50%"
-                                      stroke={color}
-                                      strokeWidth={strokeWidth}
-                                      r={radius}
-                                      strokeOpacity={0.2}
-                                      fill="transparent"
-                                    />
-                                    <AnimatedCircle
-                                      ref={circleRef}
-                                      cx="50%"
-                                      cy="50%"
-                                      stroke={color}
-                                      strokeWidth={strokeWidth}
-                                      r={radius}
-                                      fill="transparent"
-                                      strokeDasharray={circleCirumference}
-                                      strokeDashoffset={strokeDashoffset}
-                                      strokeLinecap="round"
-                                    />
-                                  </G>
-                                </Svg>
-                              </View>
-                              <Text
-                                style={[styles.unit, styles.spotlight__text]}>
-                                {calories}/{caloriesTarget} kcal
-                              </Text>
-                              {calories >= 200 ? (
-                                <Text style={styles.congrate}>
-                                  You have reached your goal!
+                            {calories > 500 ? (
+                              <View style={styles.item__number}>
+                                <View style={styles.medal__container}>
+                                  <Image source={Medal} style={styles.medal} />
+                                </View>
+                                <View style={styles.quote__contaier}>
+                                  <Text style={styles.quote__text}>
+                                    GOOD JOB!
+                                  </Text>
+                                  <Text style={styles.quote__text}>
+                                    You have achieved your goal
+                                  </Text>
+                                </View>
+                                <Text
+                                  style={[styles.unit, styles.spotlight__text]}>
+                                  {calories}/{caloriesTarget} kcal
                                 </Text>
-                              ) : (
-                                <></>
-                              )}
-                            </View>
+                              </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <View>
+                                  <Svg
+                                    width={radius * 2}
+                                    height={radius * 2}
+                                    viewBox={`0 0 ${halfCircle * 2} ${
+                                      halfCircle * 2
+                                    }`}>
+                                    <G
+                                      rotation="-90"
+                                      origin={`${halfCircle},${halfCircle}`}>
+                                      <Circle
+                                        cx="50%"
+                                        cy="50%"
+                                        stroke={color}
+                                        strokeWidth={strokeWidth}
+                                        r={radius}
+                                        strokeOpacity={0.2}
+                                        fill="transparent"
+                                      />
+                                      <AnimatedCircle
+                                        ref={circleRef}
+                                        cx="50%"
+                                        cy="50%"
+                                        stroke={color}
+                                        strokeWidth={strokeWidth}
+                                        r={radius}
+                                        fill="transparent"
+                                        strokeDasharray={circleCirumference}
+                                        strokeDashoffset={strokeDashoffset}
+                                        strokeLinecap="round"
+                                      />
+                                    </G>
+                                  </Svg>
+                                </View>
+                                <Text
+                                  style={[styles.unit, styles.spotlight__text]}>
+                                  {calories}/{caloriesTarget} kcal
+                                </Text>
+                              </View>
+                            )}
                           </View>
                         </View>
                         {/* ITEM - DISTANCE */}
@@ -418,19 +455,25 @@ const BLE = ({
                               </Text>
                             </View>
                             {/* STAT NUMBER */}
-                            <View style={styles.item__number}>
-                              <Text
-                                style={[
-                                  styles.number,
-                                  styles.spotlight__number,
-                                ]}>
-                                {distance}
-                              </Text>
-                              <Text
-                                style={[styles.unit, styles.spotlight__text]}>
-                                km
-                              </Text>
-                            </View>
+                            {data.length > 15 ? (
+                              <View style={styles.item__number}>
+                                <Text
+                                  style={[
+                                    styles.number,
+                                    styles.spotlight__number,
+                                  ]}>
+                                  {distance}
+                                </Text>
+                                <Text
+                                  style={[styles.unit, styles.spotlight__text]}>
+                                  km
+                                </Text>
+                              </View>
+                            ) : (
+                              <View style={styles.item__number}>
+                                <Loading />
+                              </View>
+                            )}
                           </View>
                         </View>
                         {/* ITEM - JUMP ACCELERATION */}
@@ -439,7 +482,7 @@ const BLE = ({
                           <View style={[styles.stat__item_content]}>
                             <View style={styles.stat__jump}>
                               <Text style={styles.bottom__name}>
-                                Jump Acceleration
+                                Jump Force
                               </Text>
                               <Image
                                 source={Jump1}
@@ -449,10 +492,7 @@ const BLE = ({
                             {/* STAT NUMBER */}
                             <View style={styles.item__number}>
                               <Text style={styles.number}>{jumpspeed}</Text>
-                              <View style={styles.unit__square}>
-                                <Text style={styles.unit}>m/s</Text>
-                                <Text style={styles.square}>2</Text>
-                              </View>
+                              <View style={styles.unit__square}></View>
                             </View>
                           </View>
                         </View>
@@ -508,7 +548,6 @@ const BLE = ({
                         </View>
                       </View>
                     </View>
-
                     {/* ITEM-RUN */}
                     <View style={styles.stat__item}>
                       {/* STAT ITEM CONTENT */}
@@ -524,22 +563,28 @@ const BLE = ({
                           <Text style={styles.stat__name}>Speed</Text>
                         </View>
                         {/* STAT NUMBER */}
-                        <View style={[styles.item__number, styles.multi]}>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run}</Text>
-                            <Text style={styles.unit}>m/s</Text>
+                        {data.length > 15 ? (
+                          <View style={[styles.item__number, styles.multi]}>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run}</Text>
+                              <Text style={styles.unit}>km/h</Text>
+                            </View>
+                            <View style={styles.line}></View>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run_avg}</Text>
+                              <Text style={styles.unit}>AVG km/h</Text>
+                            </View>
+                            <View style={styles.line}></View>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run_max}</Text>
+                              <Text style={styles.unit}>MAX km/h</Text>
+                            </View>
                           </View>
-                          <View style={styles.line}></View>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run_avg}</Text>
-                            <Text style={styles.unit}>AVG m/s</Text>
+                        ) : (
+                          <View style={styles.item__number}>
+                            <Loading />
                           </View>
-                          <View style={styles.line}></View>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run_max}</Text>
-                            <Text style={styles.unit}>MAX m/s</Text>
-                          </View>
-                        </View>
+                        )}
                       </View>
                     </View>
                     {/* ITEM-RUN ACCELERATION*/}
@@ -559,35 +604,32 @@ const BLE = ({
                             />
                           </View>
                           <Text style={styles.stat__name}>
-                            Speed Acceleration
+                            Speed Flexibility
                           </Text>
                         </View>
                         {/* STAT NUMBER */}
-                        <View style={[styles.item__number, styles.multi]}>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run_acc}</Text>
-                            <View style={styles.unit__square}>
-                              <Text style={styles.unit}>m/s</Text>
-                              <Text style={styles.square}>2</Text>
+                        {data.length > 15 ? (
+                          <View style={[styles.item__number, styles.multi]}>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run_acc}</Text>
+                              <View style={styles.unit__square}></View>
+                            </View>
+                            <View style={styles.line}></View>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run_acc_avg}</Text>
+                              <View style={styles.unit__square}></View>
+                            </View>
+                            <View style={styles.line}></View>
+                            <View style={styles.item}>
+                              <Text style={styles.number}>{run_acc_max}</Text>
+                              <View style={styles.unit__square}></View>
                             </View>
                           </View>
-                          <View style={styles.line}></View>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run_acc_avg}</Text>
-                            <View style={styles.unit__square}>
-                              <Text style={styles.unit}>AVG m/s</Text>
-                              <Text style={styles.square}>2</Text>
-                            </View>
+                        ) : (
+                          <View style={styles.item__number}>
+                            <Loading />
                           </View>
-                          <View style={styles.line}></View>
-                          <View style={styles.item}>
-                            <Text style={styles.number}>{run_acc_max}</Text>
-                            <View style={styles.unit__square}>
-                              <Text style={styles.unit}>MAX m/s</Text>
-                              <Text style={styles.square}>2</Text>
-                            </View>
-                          </View>
-                        </View>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -621,12 +663,12 @@ const BLE = ({
             <Image source={welcomeBG} style={styles.welcome__bg} />
             <View style={styles.content}>
               <View style={styles.welcome__container}>
-                <Animated.View style={[styles.welcome__time]}>
+                <View style={[styles.welcome__time]}>
                   <Text style={[styles.time__welcome, styles.highlight]}>
                     {timeString}
                   </Text>
                   <Text style={styles.time__welcome}>{period}</Text>
-                </Animated.View>
+                </View>
                 <View style={styles.welcome__logo}>
                   <Image source={Logo} style={styles.logo__image} />
                   <Text style={styles.logo__name}>smart coach</Text>
@@ -929,14 +971,10 @@ const styles = StyleSheet.create({
     color: '#F44336',
   },
   stat__name: {
-    fontSize: res * 0.018,
+    fontSize: res * 0.02,
     color: '#FFF',
-    fontWeight: '600',
+    fontWeight: '900',
     marginLeft: res * 0.015,
-  },
-  spotlight__text: {
-    // fontSize: res * 0.025,
-    // color: '#FFF',
   },
   stat__jump: {
     alignItems: 'center',
@@ -944,13 +982,32 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   jump__image: {
-    width: res * 0.06,
-    height: res * 0.1,
+    width: res * 0.07,
+    height: res * 0.12,
     resizeMode: 'cover',
   },
   item__number: {
     alignItems: 'center',
     paddingVertical: res * 0.025,
+  },
+  medal__container: {
+    width: res * 0.12,
+    height: res * 0.125,
+  },
+  medal: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  quote__contaier: {
+    marginTop: res * 0.02,
+    gap: res * 0.01,
+    alignItems: 'center',
+  },
+  quote__text: {
+    textAlign: 'center',
+    fontWeight: '900',
+    color: '#4CAF50',
   },
   number: {
     fontSize: res * 0.04,
@@ -1081,6 +1138,11 @@ const styles = StyleSheet.create({
   },
   disconnect__title: {
     color: '#FFF',
+  },
+  loadingAnimation: {
+    width: 0,
+    height: res * 0.01,
+    backgroundColor: '#FFF',
   },
 });
 

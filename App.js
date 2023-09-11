@@ -3,6 +3,7 @@ import Splash from './src/screens/Splash';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Routing from './src/router/Routing';
 import {LogBox} from 'react-native';
+import Loading from './src/screens/components/Loading';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
