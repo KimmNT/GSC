@@ -14,7 +14,7 @@ export default function BackArrow() {
 
 const styles = StyleSheet.create({
   back__container: {
-    backgroundColor: '#E79C25',
+    backgroundColor: '#4CAF50',
     alignItems: 'center',
     justifyContent: 'center',
     width: 40,

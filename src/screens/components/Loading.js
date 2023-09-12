@@ -39,22 +39,28 @@ export default function Loading() {
 const styles = StyleSheet.create({
   loading__container: {
     width: '100%',
-    // height: res * 0.02,
+    // height: '100%',
+    // backgroundColor: '#000',
+    overflow: 'hidden',
     alignItems: 'center',
+    gap: 10,
   },
   loading__text: {
     textAlign: 'center',
+    color: '#FFF',
   },
   loading__box: {
-    width: '50%',
-    height: 10,
-    backgroundColor: 'tomato',
+    width: '80%',
+    height: res * 0.005,
+    backgroundColor: '#0E3411',
     position: 'relative',
     overflow: 'hidden',
+    borderRadius: 10,
   },
   box: {
     height: '100%',
     width: 0,
-    backgroundColor: '#FFF',
+    backgroundColor: '#81C784',
+    borderRadius: 10,
   },
 });

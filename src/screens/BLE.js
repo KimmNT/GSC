@@ -72,7 +72,8 @@ const BLE = ({
   deviceName = [dataSplited[14]].toString().substring(13);
   batteryRaw = [dataSplited[15]].toString();
   battery = parseInt(batteryRaw);
-  calories = Math.round(steps * 0.03);
+  // calories = Math.round(steps * 0.03);
+  calories = 501;
   caloriesTarget = 500;
   distance = (Math.floor(steps * 0.2) / 1000).toFixed(2);
 
@@ -152,10 +153,7 @@ const BLE = ({
     sendDataToRXCharacteristic('delete');
   };
   const handleGrouping = () => {
-    Alert.alert(
-      'Please wait!',
-      'This feature is current under development. \n Thank you for your patience!',
-    );
+    navigation.navigate('GroupDevice');
   };
   console.log(data);
   return (
@@ -377,10 +375,6 @@ const BLE = ({
                                     You have achieved your goal
                                   </Text>
                                 </View>
-                                <Text
-                                  style={[styles.unit, styles.spotlight__text]}>
-                                  {calories}/{caloriesTarget} kcal
-                                </Text>
                               </View>
                             ) : (
                               <View style={styles.item__number}>
@@ -735,7 +729,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: res * 0.035,
     left: 0,
-    backgroundColor: '#E79C25',
+    backgroundColor: '#4CAF50',
     padding: res * 0.02,
     borderRadius: 20,
     alignItems: 'center',
@@ -785,7 +779,7 @@ const styles = StyleSheet.create({
     width: res * 0.07,
     height: res * 0.07,
     borderRadius: (res * 0.07) / 2,
-    backgroundColor: '#E79C25',
+    backgroundColor: '#4CAF50',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -812,11 +806,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E79C25',
+    borderColor: '#4CAF50',
   },
   group__icon: {
     fontSize: res * 0.025,
-    color: '#E79C25',
+    color: '#4CAF50',
   },
 
   //STATS STYLE --------------------------------------------------------------------------------
@@ -841,7 +835,8 @@ const styles = StyleSheet.create({
   header__text: {
     fontSize: Platform.OS == 'android' ? res * 0.03 : res * 0.04,
     fontWeight: '900',
-    color: '#E79C25',
+    // color: '#4CAF50',
+    color: '#4CAF50',
   },
   device__id: {
     fontSize: 15,
@@ -1126,7 +1121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   disconnect: {
-    backgroundColor: '#E79C25',
+    backgroundColor: '#4CAF50',
   },
   button__title: {
     textTransform: 'uppercase',
@@ -1134,7 +1129,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   clear__title: {
-    color: '#E79C25',
+    color: '#4CAF50',
   },
   disconnect__title: {
     color: '#FFF',

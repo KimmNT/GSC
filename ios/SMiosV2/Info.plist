@@ -43,6 +43,8 @@
 	<string>Allow Smart Coach to use your camera</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Allow Smart Coach to use your location services</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone to record audio for videos.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>AntDesign.ttf</string>

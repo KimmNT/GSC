@@ -11,9 +11,9 @@ import {
 const res = Dimensions.get('window').height;
 
 //LOGO
-import player from '../../assets/images/player.png';
+import player from '../../assets/images/mem.png';
 // import field from '../../assets/images/field.png';
-import ball from '../../assets/images/flying_ball.png';
+import ball from '../../assets/images/ball.png';
 
 const SplashScreen = ({navigation}) => {
   const playerMove = new Animated.Value(0);
@@ -24,13 +24,13 @@ const SplashScreen = ({navigation}) => {
   useEffect(() => {
     //PLAYER
     Animated.timing(playerMove, {
-      toValue: res * -0.09,
+      toValue: res * -0.1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
     //BALL
     Animated.timing(ballMove, {
-      toValue: res * 0.05,
+      toValue: res * 0.13,
       duration: 1000,
       useNativeDriver: true,
     }).start();
@@ -58,7 +58,7 @@ const SplashScreen = ({navigation}) => {
           source={field}
           style={[styles.field, {transform: [{translateY: fieldMove}]}]}
         /> */}
-        <Text style={styles.app__version}>version 1.0.6</Text>
+        <Text style={styles.app__version}>version 1.0.7</Text>
       </View>
     </View>
   );
@@ -97,15 +97,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     // top: 70,
     right: -60,
-    width: res * 0.27,
-    height: res * 0.32,
+    width: res * 0.32,
+    height: res * 0.33,
     zIndex: 2,
   },
   ball: {
     position: 'absolute',
-    // top: 240,
-    left: -40,
-    width: res * 0.16,
+    top: res * 0.6,
+    left: 0,
+    width: res * 0.05,
     height: res * 0.05,
     resizeMode: 'cover',
   },

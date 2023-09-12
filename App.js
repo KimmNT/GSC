@@ -4,6 +4,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Routing from './src/router/Routing';
 import {LogBox} from 'react-native';
 import Loading from './src/screens/components/Loading';
+import TakeQRCode from './src/screens/GROUPING/TakeQRCode';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
@@ -18,6 +19,7 @@ const App = () => {
   });
   return (
     <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+    // <TakeQRCode />
   );
 };
 

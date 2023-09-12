@@ -27,7 +27,6 @@ const DeviceModal = props => {
   const [qrcode, setQRCode] = useState('');
   const [showMismatchAlert, setShowMismatchAlert] = useState(false);
   const [scanned, setScanned] = useState(false); // Add a state variable to track if QR code is scanned
-
   useEffect(() => {
     const timeout = setTimeout(() => {
       setQRCode('');
@@ -112,7 +111,9 @@ const DeviceModal = props => {
       {showMismatchAlert && scanned && (
         <View style={styles.alertContainer}>
           <Text style={styles.alertText}>Device Is Not Available!</Text>
-          <TouchableOpacity onPress={handleAlertDismiss}>
+          <TouchableOpacity
+            style={styles.dismiss__container}
+            onPress={handleAlertDismiss}>
             <Text style={styles.dismissText}>scan again</Text>
           </TouchableOpacity>
         </View>
@@ -144,14 +145,16 @@ const styles = StyleSheet.create({
     fontSize: res * 0.03,
     marginBottom: res * 0.05,
   },
+  dismiss__container: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: res * 0.04,
+    paddingVertical: res * 0.02,
+    borderRadius: 5,
+  },
   dismissText: {
     color: '#FFF',
     fontSize: res * 0.02,
     textTransform: 'uppercase',
-    backgroundColor: '#E79C25',
-    paddingHorizontal: res * 0.04,
-    paddingVertical: res * 0.02,
-    borderRadius: 5,
   },
 });
 
