@@ -1,4 +1,5 @@
 import {
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -15,11 +16,23 @@ import {useDeviceInfo} from './DeviceInfoContext';
 const res = Dimensions.get('window').height;
 
 export default function GroupDevice({navigation}) {
-  const {deviceInfoArray} = useDeviceInfo();
+  const {deviceInfoArray, clearDeviceInfoArray} = useDeviceInfo();
   const navigateToQRCode = () => {
     navigation.navigate('TakeQRCode');
   };
-  console.log(deviceInfoArray.length);
+  const handleClearGroup = () => {
+    Alert.alert('Warning!', 'Do you want to clear all the devices ?', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('cancel clear'),
+      },
+      {
+        text: 'OK',
+        onPress: () => clearDeviceInfoArray(),
+      },
+    ]);
+  };
+  const handleRefreshGroup = () => {};
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
@@ -30,6 +43,36 @@ export default function GroupDevice({navigation}) {
         </TouchableOpacity>
         <Text style={styles.group__text}>group devices</Text>
       </View>
+      {deviceInfoArray.length > 0 ? (
+        <View style={styles.group__controller}>
+          <TouchableOpacity
+            onPress={handleClearGroup}
+            style={[
+              styles.group__control_btn,
+              styles.group__clear,
+              styles.shadow,
+            ]}>
+            <Icon
+              name="cleaning-services"
+              style={[styles.group__control_icon, styles.group__clear_icon]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleRefreshGroup}
+            style={[
+              styles.group__control_btn,
+              styles.group__refresh,
+              styles.shadow,
+            ]}>
+            <Icon
+              name="refresh"
+              style={[styles.group__control_icon, styles.group__refresh_icon]}
+            />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <></>
+      )}
       <View></View>
       <ScrollView style={styles.group__boxes}>
         <View style={styles.group__content}>
@@ -42,7 +85,7 @@ export default function GroupDevice({navigation}) {
                   style={styles.group__item_image}
                 />
                 {/* CONTROLLER */}
-                <View style={styles.group__item_control}>
+                <View style={styles.group__item_qrcode_container}>
                   <Text style={styles.group__item_qrcode}>
                     {item.qrcode.substring(12)}
                   </Text>
@@ -95,13 +138,17 @@ export default function GroupDevice({navigation}) {
           ))}
         </View>
       </ScrollView>
-      <View style={styles.group__add_container}>
-        <TouchableOpacity
-          onPress={navigateToQRCode}
-          style={styles.group__add_content}>
-          <Icon name="add" style={styles.groupp__add_icon} />
-        </TouchableOpacity>
-      </View>
+      {deviceInfoArray.length < 10 ? (
+        <View style={styles.group__add_container}>
+          <TouchableOpacity
+            onPress={navigateToQRCode}
+            style={styles.group__add_content}>
+            <Icon name="add" style={styles.groupp__add_icon} />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <></>
+      )}
     </View>
   );
 }
@@ -112,7 +159,6 @@ const styles = StyleSheet.create({
     height: '100%',
     position: 'relative',
     backgroundColor: '#E0E0E0',
-    alignItems: 'center',
   },
   group__headline: {
     flexDirection: 'row',
@@ -128,10 +174,37 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '900',
   },
+  group__controller: {
+    marginVertical: res * 0.02,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: res * 0.04,
+    gap: 20,
+  },
+  group__control_btn: {
+    width: res * 0.07,
+    height: res * 0.07,
+    borderRadius: (res * 0.07) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  group__clear: {
+    backgroundColor: '#F44336',
+  },
+  group__refresh: {
+    backgroundColor: '#4CAF50',
+  },
+
+  group__control_icon: {
+    fontSize: res * 0.03,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  group__clear_icon: {},
+  group__refresh_icon: {},
   group__boxes: {
     width: '100%',
     height: '100%',
-    marginTop: res * 0.05,
   },
   group__content: {
     flexDirection: 'row',
@@ -169,7 +242,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     borderRadius: (res * 0.12) / 2,
   },
-  group__item_control: {
+  group__item_qrcode_container: {
     backgroundColor: '#000',
     marginTop: res * 0.01,
     width: '100%',

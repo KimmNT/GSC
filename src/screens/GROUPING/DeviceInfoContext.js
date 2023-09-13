@@ -1,4 +1,3 @@
-// DeviceInfoContext.js
 import {createContext, useContext, useState} from 'react';
 
 const DeviceInfoContext = createContext();
@@ -10,8 +9,13 @@ export const DeviceInfoProvider = ({children}) => {
     setDeviceInfoArray([...deviceInfoArray, deviceInfo]);
   };
 
+  const clearDeviceInfoArray = () => {
+    setDeviceInfoArray([]);
+  };
+
   return (
-    <DeviceInfoContext.Provider value={{deviceInfoArray, addDeviceInfo}}>
+    <DeviceInfoContext.Provider
+      value={{deviceInfoArray, addDeviceInfo, clearDeviceInfoArray}}>
       {children}
     </DeviceInfoContext.Provider>
   );
