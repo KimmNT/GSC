@@ -63,9 +63,9 @@ const BLE = ({
   acceleration = [dataSplited[5]];
   jumps = [dataSplited[6]];
   jumpspeed = [dataSplited[7]];
-  run = ([dataSplited[8]] * 3.6).toFixed(2);
-  run_avg = ([dataSplited[9]] * 3.6).toFixed(2);
-  run_max = ([dataSplited[10]] * 3.6).toFixed(2);
+  run = ([dataSplited[8]] * 3.6).toFixed(1);
+  run_avg = ([dataSplited[9]] * 3.6).toFixed(1);
+  run_max = ([dataSplited[10]] * 3.6).toFixed(1);
   run_acc = [dataSplited[11]];
   run_acc_avg = [dataSplited[12]];
   run_acc_max = [dataSplited[13]];
@@ -493,7 +493,7 @@ const BLE = ({
                       </View>
                     </View>
                     {/* ITEM - HEATMAP */}
-                    <View style={[styles.stat__item]}>
+                    <View style={[styles.stat__item, styles.disable]}>
                       {/* STAT ITEM CONTENT */}
                       <View style={[styles.stat__item_content]}>
                         {/* HEAD ITEM */}
@@ -875,6 +875,9 @@ const styles = StyleSheet.create({
   },
   stat__list: {
     gap: 20,
+  },
+  disable: {
+    display: 'none',
   },
   vertical__list: {
     flexDirection: 'row',

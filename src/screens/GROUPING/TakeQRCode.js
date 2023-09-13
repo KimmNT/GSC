@@ -22,6 +22,7 @@ export default function TakeQRCode({navigation}) {
   if (qrcode != '') {
     navigation.navigate('TakePicture', {qrcode});
   }
+  console.log(qrcode);
   return (
     <View>
       <View style={styles.qrcode__container}>

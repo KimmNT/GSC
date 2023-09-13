@@ -1,12 +1,17 @@
 import React, {useState, useRef} from 'react';
 import {View, TouchableOpacity, Image, Button} from 'react-native';
 import {RNCamera} from 'react-native-camera';
+import {useDeviceInfo} from './DeviceInfoContext';
 
 function CameraScreen({navigation, route}) {
   const {qrcode} = route.params;
   const cameraRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
-  const [deviceInfo, setDeviceInfor] = useState('');
+  const [deviceInfor, setDeviceInfor] = useState({
+    qrcode: route.params.qrcode,
+    capturedImage: null,
+  });
+  const {addDeviceInfo} = useDeviceInfo();
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -15,17 +20,23 @@ function CameraScreen({navigation, route}) {
 
       // Set the captured image URI to display it
       setCapturedImage(data.uri);
+
+      //Update the deviceInfo state
+      setDeviceInfor(prevData => ({
+        ...prevData,
+        capturedImage: data.uri,
+      }));
     }
   };
-
   const retakePicture = () => {
-    // Clear the captured image URI to allow retaking
     setCapturedImage(null);
   };
+  console.log(deviceInfor);
   const navigateToGroup = () => {
-    setDeviceInfor(`${qrcode} ${capturedImage}`);
+    addDeviceInfo(deviceInfor);
+    navigation.navigate('GroupDevice');
   };
-  console.log(deviceInfo);
+
   return (
     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
       {capturedImage ? (
@@ -35,6 +46,7 @@ function CameraScreen({navigation, route}) {
             style={{flex: 1, width: '100%'}}
           />
           <Button title="Retake" onPress={retakePicture} />
+          {/* <Button title="Merch them!" onPress={merchInfo} /> */}
           <Button title="Move" onPress={navigateToGroup} />
         </View>
       ) : (

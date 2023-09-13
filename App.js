@@ -5,6 +5,7 @@ import Routing from './src/router/Routing';
 import {LogBox} from 'react-native';
 import Loading from './src/screens/components/Loading';
 import TakeQRCode from './src/screens/GROUPING/TakeQRCode';
+import {DeviceInfoProvider} from './src/screens/GROUPING/DeviceInfoContext';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
@@ -18,7 +19,10 @@ const App = () => {
     }, 2300);
   });
   return (
-    <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+    <DeviceInfoProvider>
+      <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+    </DeviceInfoProvider>
+
     // <TakeQRCode />
   );
 };
