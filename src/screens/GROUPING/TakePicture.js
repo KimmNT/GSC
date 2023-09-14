@@ -54,9 +54,6 @@ function CameraScreen({navigation, route}) {
             source={{uri: capturedImage}}
             style={{flex: 1, width: '100%'}}
           />
-          {/* <Button title="Retake"onPress={retakePicture} /> */}
-          {/* <Button title="Move" onPress={navigateToGroup} /> */}
-
           <View style={styles.controller}>
             <TouchableOpacity
               onPress={retakePicture}
@@ -127,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: (res * 0.08) / 2,
     backgroundColor: '#FFF',
     borderWidth: 5,
-    borderColor: '#4CAE50',
+    borderColor: '#4CAF50',
   },
   controller: {
     position: 'absolute',

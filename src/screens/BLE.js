@@ -72,8 +72,8 @@ const BLE = ({
   deviceName = [dataSplited[14]].toString().substring(13);
   batteryRaw = [dataSplited[15]].toString();
   battery = parseInt(batteryRaw);
-  // calories = Math.round(steps * 0.03);
-  calories = 501;
+  calories = Math.round(steps * 0.03);
+  // calories = 501;
   caloriesTarget = 500;
   distance = (Math.floor(steps * 0.2) / 1000).toFixed(2);
 
@@ -169,24 +169,36 @@ const BLE = ({
                 <Text style={styles.device__id}>Device code: {deviceName}</Text>
               </View>
               {/* BATTERY UI */}
-              <View style={styles.battery__container}>
-                <Text style={styles.battery__number}>{battery}%</Text>
-                <View style={styles.battery__charge}>
-                  {battery > 20 ? (
-                    <View
-                      style={[
-                        styles.box__notcharge,
-                        {width: `${battery}%`, height: '100%', borderRadius: 2},
-                      ]}></View>
-                  ) : (
-                    <View
-                      style={[
-                        styles.box__incharge,
-                        {width: `${battery}%`, height: '100%', borderRadius: 2},
-                      ]}></View>
-                  )}
+              {data.length > 15 ? (
+                <View style={styles.battery__container}>
+                  <Text style={styles.battery__number}>{battery}%</Text>
+                  <View style={styles.battery__charge}>
+                    {battery > 20 ? (
+                      <View
+                        style={[
+                          styles.box__notcharge,
+                          {
+                            width: `${battery}%`,
+                            height: '100%',
+                            borderRadius: 2,
+                          },
+                        ]}></View>
+                    ) : (
+                      <View
+                        style={[
+                          styles.box__incharge,
+                          {
+                            width: `${battery}%`,
+                            height: '100%',
+                            borderRadius: 2,
+                          },
+                        ]}></View>
+                    )}
+                  </View>
                 </View>
-              </View>
+              ) : (
+                <Text style={{color: '#FFF'}}>Loading...</Text>
+              )}
             </View>
             <ScrollView>
               <View style={styles.content}>
@@ -654,18 +666,28 @@ const BLE = ({
           </View>
         ) : (
           <View style={styles.container}>
-            <Image source={welcomeBG} style={styles.welcome__bg} />
+            <Image source={BackGround} style={styles.welcome__bg} />
             <View style={styles.content}>
               <View style={styles.welcome__container}>
                 <View style={[styles.welcome__time]}>
-                  <Text style={[styles.time__welcome, styles.highlight]}>
-                    {timeString}
-                  </Text>
-                  <Text style={styles.time__welcome}>{period}</Text>
+                  <View style={styles.time__welcome__container}>
+                    <Text style={[styles.time__welcome, styles.highlight]}>
+                      {timeString}
+                    </Text>
+                  </View>
+                  <Text style={styles.time__welcome_period}>{period}</Text>
                 </View>
                 <View style={styles.welcome__logo}>
-                  <Image source={Logo} style={styles.logo__image} />
-                  <Text style={styles.logo__name}>smart coach</Text>
+                  {/* <Image source={Logo} style={styles.logo__image} /> */}
+                  <View style={styles.start}>
+                    <Text style={[styles.logo__name]}>smart</Text>
+                  </View>
+                  <View style={styles.space__box}>
+                    <View style={styles.space__box_content}></View>
+                  </View>
+                  <View style={styles.end}>
+                    <Text style={[styles.logo__name, styles.end]}>coach</Text>
+                  </View>
                 </View>
                 <View style={styles.welcome__btn_group}>
                   <View style={styles.welcome__scan}>
@@ -673,7 +695,7 @@ const BLE = ({
                     <TouchableOpacity
                       style={styles.scan__box}
                       onPress={openModal}>
-                      <Icon name="chevron-right" style={styles.scan__icon} />
+                      <Icon name="document-scanner" style={styles.scan__icon} />
                     </TouchableOpacity>
                   </View>
                   <View style={styles.welcome__group}>
@@ -708,20 +730,19 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: '100%',
+    backgroundColor: '#000',
   },
   welcome__bg: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-
-    // resizeMode: 'cover',
   },
   welcome__container: {
     position: 'relative',
     padding: res * 0.025,
-    // backgroundColor: 'red',
     width: '100%',
     height: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -729,24 +750,46 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: res * 0.035,
     left: 0,
-    backgroundColor: '#4CAF50',
-    padding: res * 0.02,
-    borderRadius: 20,
+    width: res * 0.15,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     opacity: 0.95,
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    paddingVertical: res * 0.015,
+    gap: 10,
+  },
+  time__welcome__container: {
+    backgroundColor: '#FFF',
+    borderRadius: 5,
   },
   time__welcome: {
     fontSize: res * 0.02,
-    color: '#FFF',
+    color: '#4CAF50',
+  },
+  time__welcome_period: {
+    fontWeight: '600',
+    color: '#000',
+    backgroundColor: '#FFF',
   },
   highlight: {
     fontWeight: '700',
     fontSize: res * 0.03,
   },
   welcome__logo: {
+    width: '80%',
+    // alignItems: 'center',
+  },
+  space__box: {
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  space__box_content: {
+    width: '40%',
+    height: res * 0.005,
+    backgroundColor: '#4CAF50',
+    margin: res * 0.02,
+    borderRadius: 10,
   },
   logo__image: {
     width: res * 0.25,
@@ -755,9 +798,17 @@ const styles = StyleSheet.create({
   },
   logo__name: {
     textTransform: 'uppercase',
-    fontWeight: '600',
-    fontSize: res * 0.04,
+    fontWeight: '900',
+    fontSize: res * 0.05,
     color: '#FFF',
+  },
+  start: {
+    // width: '100%',
+    alignItems: 'flex-start',
+  },
+  end: {
+    // width: '100%',
+    alignItems: 'flex-end',
   },
   welcome__btn_group: {
     position: 'absolute',
@@ -784,7 +835,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scan__icon: {
-    fontSize: res * 0.05,
+    fontSize: res * 0.03,
     color: '#FFF',
   },
   welcome__group: {
@@ -805,8 +856,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#4CAF50',
   },
   group__icon: {
     fontSize: res * 0.025,

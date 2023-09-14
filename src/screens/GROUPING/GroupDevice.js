@@ -20,6 +20,7 @@ export default function GroupDevice({navigation}) {
   const navigateToQRCode = () => {
     navigation.navigate('TakeQRCode');
   };
+  //CLEAR DEVICES LIST
   const handleClearGroup = () => {
     Alert.alert('Warning!', 'Do you want to clear all the devices ?', [
       {
@@ -32,6 +33,7 @@ export default function GroupDevice({navigation}) {
       },
     ]);
   };
+  //REFRESH LIST
   const handleRefreshGroup = () => {};
   return (
     <View style={styles.group__container}>
@@ -43,6 +45,7 @@ export default function GroupDevice({navigation}) {
         </TouchableOpacity>
         <Text style={styles.group__text}>group devices</Text>
       </View>
+      {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
         <View style={styles.group__controller}>
           <TouchableOpacity
@@ -73,7 +76,7 @@ export default function GroupDevice({navigation}) {
       ) : (
         <></>
       )}
-      <View></View>
+      {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
         <View style={styles.group__content}>
           {deviceInfoArray.map((item, index) => (
@@ -84,7 +87,7 @@ export default function GroupDevice({navigation}) {
                   source={{uri: item.capturedImage}}
                   style={styles.group__item_image}
                 />
-                {/* CONTROLLER */}
+                {/* QR */}
                 <View style={styles.group__item_qrcode_container}>
                   <Text style={styles.group__item_qrcode}>
                     {item.qrcode.substring(12)}
@@ -99,7 +102,7 @@ export default function GroupDevice({navigation}) {
                     style={[styles.stat__icon, styles.step]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>239</Text>
+                    <Text style={styles.stat__number}>351</Text>
                     <Text style={styles.stat__unit}>steps</Text>
                   </View>
                 </View>
@@ -109,7 +112,7 @@ export default function GroupDevice({navigation}) {
                     style={[styles.stat__icon, styles.time]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>15</Text>
+                    <Text style={styles.stat__number}>19</Text>
                     <Text style={styles.stat__unit}>time</Text>
                   </View>
                 </View>
@@ -119,7 +122,7 @@ export default function GroupDevice({navigation}) {
                     style={[styles.stat__icon, styles.calories]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>139</Text>
+                    <Text style={styles.stat__number}>190</Text>
                     <Text style={styles.stat__unit}>kcal</Text>
                   </View>
                 </View>
@@ -129,7 +132,7 @@ export default function GroupDevice({navigation}) {
                     style={[styles.stat__icon, styles.distance]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>4.12</Text>
+                    <Text style={styles.stat__number}>6.12</Text>
                     <Text style={styles.stat__unit}>km</Text>
                   </View>
                 </View>
@@ -138,6 +141,7 @@ export default function GroupDevice({navigation}) {
           ))}
         </View>
       </ScrollView>
+      {/* STATS` */}
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
           <TouchableOpacity
