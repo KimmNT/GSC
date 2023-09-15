@@ -89,6 +89,11 @@ function CameraScreen({navigation, route}) {
         />
       )}
       {!capturedImage && (
+        <View style={styles.take__circle_container}>
+          <View style={styles.take__circle}></View>
+        </View>
+      )}
+      {!capturedImage && (
         <TouchableOpacity onPress={takePicture} style={styles.take__btn}>
           <View style={styles.take__btn_inside}></View>
         </TouchableOpacity>
@@ -107,6 +112,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.6,
     shadowRadius: 5.68,
     elevation: 12,
+  },
+  take__circle_container: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // opacity: 0.3,
+  },
+  take__circle: {
+    position: 'absolute',
+    width: res * 0.4,
+    height: res * 0.4,
+    borderRadius: (res * 0.4) / 2,
+    backgroundColor: 'transparent',
+    borderWidth: 3,
+    borderColor: '#4CEF50',
   },
   take__btn: {
     position: 'absolute',
