@@ -54,10 +54,6 @@ const SplashScreen = ({navigation}) => {
           source={ball}
           style={[styles.ball, {transform: [{translateX: ballMove}]}]}
         />
-        {/* <Animated.Image
-          source={field}
-          style={[styles.field, {transform: [{translateY: fieldMove}]}]}
-        /> */}
         <Text style={styles.app__version}>version 1.0.7</Text>
       </View>
     </View>
@@ -96,14 +92,14 @@ const styles = StyleSheet.create({
   player: {
     position: 'absolute',
     // top: 70,
-    right: -60,
-    width: res * 0.32,
-    height: res * 0.33,
+    right: -65,
+    width: res * 0.3,
+    height: res * 0.31,
     zIndex: 2,
   },
   ball: {
     position: 'absolute',
-    top: res * 0.6,
+    top: res * 0.57,
     left: 0,
     width: res * 0.05,
     height: res * 0.05,

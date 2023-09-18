@@ -304,9 +304,6 @@ const BLE = ({
                                 <Text style={styles.number}>
                                   {acceleration}
                                 </Text>
-                                <View style={styles.unit__square}>
-                                  <Text style={styles.unit}></Text>
-                                </View>
                               </View>
                             ) : (
                               <View style={styles.item__number}>
@@ -507,9 +504,9 @@ const BLE = ({
                     {/* ITEM - HEATMAP */}
                     <View style={[styles.stat__item, styles.disable]}>
                       {/* STAT ITEM CONTENT */}
-                      <View style={[styles.stat__item_content]}>
-                        {/* HEAD ITEM */}
-                        <View style={styles.item__head}>
+                      {/* <View style={[styles.stat__item_content]}> */}
+                      {/* HEAD ITEM */}
+                      {/* <View style={styles.item__head}>
                           <View
                             style={[styles.stat__icon, styles.heatmap__blur]}>
                             <Icon
@@ -518,10 +515,10 @@ const BLE = ({
                             />
                           </View>
                           <Text style={styles.stat__name}>Heat map</Text>
-                        </View>
-                        {/* MAP */}
-                        <View style={styles.map__container}>
-                          <View style={styles.map__disable}></View>
+                        </View> */}
+                      {/* MAP */}
+                      <View style={styles.map__container}>
+                        {/* <View style={styles.map__disable}></View>
                           <MapView
                             style={styles.map}
                             provider={'google'}
@@ -551,7 +548,7 @@ const BLE = ({
                               </Marker>
                             ))}
                           </MapView>
-                        </View>
+                        </View> */}
                       </View>
                     </View>
                     {/* ITEM-RUN */}
@@ -761,7 +758,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   time__welcome__container: {
-    backgroundColor: '#FFF',
+    // backgroundColor: '#FFF',
     borderRadius: 5,
   },
   time__welcome: {
@@ -771,7 +768,7 @@ const styles = StyleSheet.create({
   time__welcome_period: {
     fontWeight: '600',
     color: '#000',
-    backgroundColor: '#FFF',
+    // backgroundColor: '#FFF',
   },
   highlight: {
     fontWeight: '700',

@@ -3,8 +3,6 @@ import Splash from './src/screens/Splash';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Routing from './src/router/Routing';
 import {LogBox} from 'react-native';
-import Loading from './src/screens/components/Loading';
-import TakeQRCode from './src/screens/GROUPING/TakeQRCode';
 import {DeviceInfoProvider} from './src/screens/GROUPING/DeviceInfoContext';
 
 //remove warning ViewPropTypes will be removed from React Native,

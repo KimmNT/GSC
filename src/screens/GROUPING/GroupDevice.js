@@ -186,9 +186,9 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   group__control_btn: {
-    width: res * 0.07,
-    height: res * 0.07,
-    borderRadius: (res * 0.07) / 2,
+    width: res * 0.05,
+    height: res * 0.05,
+    borderRadius: (res * 0.05) / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -200,12 +200,10 @@ const styles = StyleSheet.create({
   },
 
   group__control_icon: {
-    fontSize: res * 0.03,
+    fontSize: res * 0.02,
     fontWeight: '600',
     color: '#FFF',
   },
-  group__clear_icon: {},
-  group__refresh_icon: {},
   group__boxes: {
     width: '100%',
     height: '100%',
@@ -241,10 +239,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   group__item_image: {
-    width: res * 0.12,
-    height: res * 0.12,
+    width: res * 0.1,
+    height: res * 0.1,
     resizeMode: 'cover',
-    borderRadius: (res * 0.12) / 2,
+    borderRadius: (res * 0.1) / 2,
   },
   group__item_qrcode_container: {
     backgroundColor: '#000',
@@ -291,7 +289,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stat__number: {
-    fontSize: res * 0.025,
+    fontSize: res * 0.02,
     fontWeight: '900',
     color: '#000',
   },
