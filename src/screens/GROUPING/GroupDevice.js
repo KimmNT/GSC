@@ -1,10 +1,12 @@
 import {
   Alert,
+  Button,
   Dimensions,
   Image,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -16,9 +18,21 @@ import {useDeviceInfo} from './DeviceInfoContext';
 const res = Dimensions.get('window').height;
 
 export default function GroupDevice({navigation}) {
-  const {deviceInfoArray, clearDeviceInfoArray} = useDeviceInfo();
+  const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
+    useDeviceInfo();
+  // State variables to manage input values
+  const [qrcodeInput, setQrcodeInput] = useState('');
+  const [stepsInput, setStepsInput] = useState('');
+  const [timeInput, setTimeInput] = useState('');
+  const [distanceInput, setDistanceInput] = useState('');
+  const [caloriesInput, setCaloriesInput] = useState('');
+  const [speedInput, setSpeedInput] = useState('');
+  const [flexInput, setFlexInput] = useState('');
   const navigateToQRCode = () => {
     navigation.navigate('TakeQRCode');
+  };
+  const showArray = () => {
+    console.log(deviceInfoArray[2]);
   };
   //CLEAR DEVICES LIST
   const handleClearGroup = () => {
@@ -35,6 +49,50 @@ export default function GroupDevice({navigation}) {
   };
   //REFRESH LIST
   const handleRefreshGroup = () => {};
+
+  //SUBMIT
+  const handleSubmit = () => {
+    // Validate input values here if needed
+
+    // Find the index of the existing object with the same "qrcode" in deviceInfoArray
+    const existingIndex = deviceInfoArray.findIndex(
+      item => item.qrcode === qrcodeInput,
+    );
+
+    // Create a new device info object with the entered values
+    const newDeviceInfo = {
+      qrcode: qrcodeInput,
+      steps: parseInt(stepsInput),
+      time: parseInt(timeInput),
+      distance: parseInt(distanceInput),
+      calories: parseInt(caloriesInput),
+      speed: parseInt(speedInput),
+      flex: parseInt(flexInput),
+      rank:
+        (parseInt(distanceInput) +
+          parseInt(caloriesInput) +
+          parseInt(speedInput) +
+          parseInt(flexInput)) /
+        parseInt(timeInput),
+    };
+
+    if (existingIndex !== -1) {
+      // If an object with the same "qrcode" exists, update it
+      deviceInfoArray[existingIndex] = newDeviceInfo;
+    } else {
+      // If no object with the same "qrcode" exists, add the new device info
+      addDeviceInfo(newDeviceInfo);
+    }
+
+    // Clear the input fields
+    setStepsInput('');
+    setTimeInput('');
+    setDistanceInput('');
+    setCaloriesInput('');
+    setSpeedInput('');
+    setFlexInput('');
+  };
+
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
@@ -48,6 +106,20 @@ export default function GroupDevice({navigation}) {
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
         <View style={styles.group__controller}>
+          {/* CLEAR DEVICES */}
+          <TouchableOpacity
+            onPress={showArray}
+            style={[
+              styles.group__control_btn,
+              styles.group__clear,
+              styles.shadow,
+            ]}>
+            <Icon
+              name="home"
+              style={[styles.group__control_icon, styles.group__clear_icon]}
+            />
+          </TouchableOpacity>
+          {/* CLEAR DEVICES */}
           <TouchableOpacity
             onPress={handleClearGroup}
             style={[
@@ -60,6 +132,7 @@ export default function GroupDevice({navigation}) {
               style={[styles.group__control_icon, styles.group__clear_icon]}
             />
           </TouchableOpacity>
+          {/* REFRESH */}
           <TouchableOpacity
             onPress={handleRefreshGroup}
             style={[
@@ -78,6 +151,62 @@ export default function GroupDevice({navigation}) {
       )}
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginTop: res * 0.05,
+          }}>
+          <TextInput
+            placeholder="QR Code"
+            value={qrcodeInput}
+            style={{width: '30%'}}
+            onChangeText={text => setQrcodeInput(text)}
+          />
+          <TextInput
+            placeholder="Steps"
+            keyboardType="numeric"
+            value={stepsInput}
+            style={{width: '30%'}}
+            onChangeText={text => setStepsInput(text)}
+          />
+          <TextInput
+            placeholder="Time"
+            keyboardType="numeric"
+            value={timeInput}
+            style={{width: '30%'}}
+            onChangeText={text => setTimeInput(text)}
+          />
+          <TextInput
+            placeholder="Distance"
+            keyboardType="numeric"
+            value={distanceInput}
+            style={{width: '30%'}}
+            onChangeText={text => setDistanceInput(text)}
+          />
+          <TextInput
+            placeholder="Calories"
+            keyboardType="numeric"
+            value={caloriesInput}
+            style={{width: '30%'}}
+            onChangeText={text => setCaloriesInput(text)}
+          />
+          <TextInput
+            placeholder="Speed"
+            keyboardType="numeric"
+            value={speedInput}
+            style={{width: '30%'}}
+            onChangeText={text => setSpeedInput(text)}
+          />
+          <TextInput
+            placeholder="Flex"
+            keyboardType="numeric"
+            value={flexInput}
+            onChangeText={text => setFlexInput(text)}
+          />
+          <Button title="Submit" onPress={handleSubmit} />
+        </View>
         <View style={styles.group__content}>
           {deviceInfoArray.map((item, index) => (
             <View style={[styles.group__item, styles.shadow]} key={index}>
@@ -90,49 +219,54 @@ export default function GroupDevice({navigation}) {
                 {/* QR */}
                 <View style={styles.group__item_qrcode_container}>
                   <Text style={styles.group__item_qrcode}>
-                    {item.qrcode.substring(12)}
+                    {/* {item.qrcode.substring(12)} */}
+                    {item.qrcode}
                   </Text>
                 </View>
               </View>
               {/* STATS */}
               <View style={styles.group__item_stat}>
+                {/* STEPS */}
                 <View style={styles.stat__info}>
                   <Icon
                     name="run-circle"
                     style={[styles.stat__icon, styles.step]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>351</Text>
+                    <Text style={styles.stat__number}>{item.steps}</Text>
                     <Text style={styles.stat__unit}>steps</Text>
                   </View>
                 </View>
+                {/* TIME */}
                 <View style={styles.stat__info}>
                   <Icon
                     name="schedule"
                     style={[styles.stat__icon, styles.time]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>19</Text>
+                    <Text style={styles.stat__number}>{item.time}</Text>
                     <Text style={styles.stat__unit}>time</Text>
                   </View>
                 </View>
+                {/* CALORIES */}
                 <View style={styles.stat__info}>
                   <Icon
                     name="local-fire-department"
                     style={[styles.stat__icon, styles.calories]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>190</Text>
+                    <Text style={styles.stat__number}>{item.calories}</Text>
                     <Text style={styles.stat__unit}>kcal</Text>
                   </View>
                 </View>
+                {/* DISTANCE */}
                 <View style={styles.stat__info}>
                   <Icon
                     name="directions-walk"
                     style={[styles.stat__icon, styles.distance]}
                   />
                   <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>6.12</Text>
+                    <Text style={styles.stat__number}>{item.distance}</Text>
                     <Text style={styles.stat__unit}>km</Text>
                   </View>
                 </View>
@@ -142,6 +276,7 @@ export default function GroupDevice({navigation}) {
         </View>
       </ScrollView>
       {/* STATS` */}
+
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
           <TouchableOpacity

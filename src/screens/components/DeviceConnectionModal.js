@@ -27,20 +27,22 @@ const DeviceModal = props => {
   const [qrcode, setQRCode] = useState('');
   const [showMismatchAlert, setShowMismatchAlert] = useState(false);
   const [scanned, setScanned] = useState(false); // Add a state variable to track if QR code is scanned
+
+  //Change QR to empty string -> Open camera
   useEffect(() => {
     const timeout = setTimeout(() => {
       setQRCode('');
     }, 5000);
-
     return () => clearTimeout(timeout);
   }, [qrcode]);
 
+  //Convert  code
   const cutQR = qrcode.substring(3);
   const renderDeviceModalListItem = useCallback(
     item => {
       const nameSplit = item.item.name.split('-');
       const idName = [nameSplit[1]].toString();
-      console.log(`QR: ${cutQR}`);
+      // console.log(`QR: ${cutQR}`);
       console.log(`id: ${idName}`);
       //Scan for Android
       if (Platform.OS === 'android') {

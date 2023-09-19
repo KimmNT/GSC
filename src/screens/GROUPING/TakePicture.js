@@ -5,6 +5,7 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
 import {useDeviceInfo} from './DeviceInfoContext';
@@ -19,7 +20,21 @@ function CameraScreen({navigation, route}) {
   const [deviceInfor, setDeviceInfor] = useState({
     qrcode: route.params.qrcode,
     capturedImage: null,
+    steps: 0,
+    time: 0,
+    distance: 0,
+    calories: 0,
+    speed: 0,
+    flex: 0,
+    rank: 0,
   });
+  const [stepValue, setStepValue] = useState(10);
+  const [timeValue, setTimeValue] = useState(7);
+  const [distanceValue, setDistanceValue] = useState(20);
+  const [caloriesValue, setCaloriesValue] = useState(401);
+  const [speedValue, setSpeedValue] = useState(2.5);
+  const [flexValue, setFlexValue] = useState(0.05);
+
   const {addDeviceInfo} = useDeviceInfo();
 
   const takePicture = async () => {
@@ -40,7 +55,6 @@ function CameraScreen({navigation, route}) {
   const retakePicture = () => {
     setCapturedImage(null);
   };
-  console.log(deviceInfor);
   const navigateToGroup = () => {
     addDeviceInfo(deviceInfor);
     navigation.navigate('GroupDevice');

@@ -153,9 +153,9 @@ const BLE = ({
     sendDataToRXCharacteristic('delete');
   };
   const handleGrouping = () => {
+    scanForDevices();
     navigation.navigate('GroupDevice');
   };
-  console.log(data);
   return (
     <View style={styles.container}>
       <View style={styles.container}>
