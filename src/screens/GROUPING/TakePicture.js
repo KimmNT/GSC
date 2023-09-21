@@ -28,12 +28,6 @@ function CameraScreen({navigation, route}) {
     flex: 0,
     rank: 0,
   });
-  const [stepValue, setStepValue] = useState(10);
-  const [timeValue, setTimeValue] = useState(7);
-  const [distanceValue, setDistanceValue] = useState(20);
-  const [caloriesValue, setCaloriesValue] = useState(401);
-  const [speedValue, setSpeedValue] = useState(2.5);
-  const [flexValue, setFlexValue] = useState(0.05);
 
   const {addDeviceInfo} = useDeviceInfo();
 
@@ -57,7 +51,7 @@ function CameraScreen({navigation, route}) {
   };
   const navigateToGroup = () => {
     addDeviceInfo(deviceInfor);
-    navigation.navigate('GroupDevice');
+    navigation.navigate('GroupDevice', {qrcode});
   };
 
   return (

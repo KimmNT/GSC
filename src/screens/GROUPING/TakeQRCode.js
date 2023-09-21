@@ -20,9 +20,9 @@ export default function TakeQRCode({navigation}) {
     setQRCode(data);
   };
   if (qrcode != '') {
+    // const cutQR = qrcode.substring(3);
     navigation.navigate('TakePicture', {qrcode});
   }
-  console.log(qrcode);
   return (
     <View>
       <View style={styles.qrcode__container}>

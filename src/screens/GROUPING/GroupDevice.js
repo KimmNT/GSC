@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   Dimensions,
+  FlatList,
   Image,
   ScrollView,
   StyleSheet,
@@ -10,29 +11,61 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import useBLE from '../../../useBLE';
 import React, {useEffect, useState} from 'react';
 import BackArrow from '../components/BackArrow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useDeviceInfo} from './DeviceInfoContext';
+import GroupDeviceModal from './GroupDeviceConnectionModal';
 
 const res = Dimensions.get('window').height;
 
-export default function GroupDevice({navigation}) {
+export default function GroupDevice({navigation, route}) {
+  const {cutQR} = route.params || {};
+  const {
+    requestPermissions,
+    scanForDevices,
+    allDevices,
+    connectToDevice,
+    connectedDevice,
+    data,
+    disconnectFromDevice,
+    sendDataToRXCharacteristic,
+    stopDevice,
+    clearDevices,
+    connectToGroupDevice,
+  } = useBLE();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
     useDeviceInfo();
+  const [newArr, setNewArr] = useState([]);
+
+  console.log(data);
+  const dataSplited = data.split('|');
+  // id = parseInt([dataSplited[0]]);
+  // interval = parseInt([dataSplited[1]]);
+  // dataTime = Math.round((id * (interval / 1000)) / 60);
+  // dataSteps = parseInt([dataSplited[2]]);
+  // dataFlex = parseFloat([dataSplited[5]]);
+  // dataRun = parseFloat(([dataSplited[8]] * 3.6).toFixed(1));
+  // dataCalories = Math.round(dataSteps * 0.03);
+  // dataDistance = parseFloat((Math.floor(dataSteps * 0.2) / 1000).toFixed(2));
+
   // State variables to manage input values
-  const [qrcodeInput, setQrcodeInput] = useState('');
-  const [stepsInput, setStepsInput] = useState('');
-  const [timeInput, setTimeInput] = useState('');
-  const [distanceInput, setDistanceInput] = useState('');
-  const [caloriesInput, setCaloriesInput] = useState('');
-  const [speedInput, setSpeedInput] = useState('');
-  const [flexInput, setFlexInput] = useState('');
+  const [qrcodeInput, setQrcodeInput] = useState('INITIAL QRCODE');
+
   const navigateToQRCode = () => {
     navigation.navigate('TakeQRCode');
   };
+  //BUTTON
   const showArray = () => {
-    console.log(deviceInfoArray[2]);
+    scanForDevices();
+    const updateArr = allDevices.map(item => ({
+      ...item,
+      name: item.name.replace('GSC-', ''),
+    }));
+    setNewArr(updateArr.map(item => item.name));
+    console.log(newArr);
   };
   //CLEAR DEVICES LIST
   const handleClearGroup = () => {
@@ -48,32 +81,28 @@ export default function GroupDevice({navigation}) {
     ]);
   };
   //REFRESH LIST
-  const handleRefreshGroup = () => {};
-
+  const handleRefreshGroup = () => {
+    sendDataToRXCharacteristic('read');
+  };
   //SUBMIT
   const handleSubmit = () => {
     // Validate input values here if needed
 
     // Find the index of the existing object with the same "qrcode" in deviceInfoArray
     const existingIndex = deviceInfoArray.findIndex(
-      item => item.qrcode === qrcodeInput,
+      item => item.cutQR === qrcodeInput,
     );
 
     // Create a new device info object with the entered values
     const newDeviceInfo = {
-      qrcode: qrcodeInput,
-      steps: parseInt(stepsInput),
-      time: parseInt(timeInput),
-      distance: parseInt(distanceInput),
-      calories: parseInt(caloriesInput),
-      speed: parseInt(speedInput),
-      flex: parseInt(flexInput),
-      rank:
-        (parseInt(distanceInput) +
-          parseInt(caloriesInput) +
-          parseInt(speedInput) +
-          parseInt(flexInput)) /
-        parseInt(timeInput),
+      cutQR: qrcodeInput,
+      steps: dataSteps,
+      time: dataTime,
+      distance: dataDistance,
+      calories: dataCalories,
+      speed: dataRun,
+      flex: dataFlex,
+      rank: (dataDistance + dataCalories + dataRun + dataFlex) / dataTime,
     };
 
     if (existingIndex !== -1) {
@@ -83,16 +112,22 @@ export default function GroupDevice({navigation}) {
       // If no object with the same "qrcode" exists, add the new device info
       addDeviceInfo(newDeviceInfo);
     }
-
-    // Clear the input fields
-    setStepsInput('');
-    setTimeInput('');
-    setDistanceInput('');
-    setCaloriesInput('');
-    setSpeedInput('');
-    setFlexInput('');
   };
-
+  // const hideModal = () => {
+  //   setIsModalVisible(false);
+  // };
+  // //Open Modal, pass connection function
+  // const openModal = async () => {
+  //   requestPermissions(isGranted => {
+  //     if (isGranted) {
+  //       setIsModalVisible(true);
+  //       scanForDevices();
+  //     }
+  //   });
+  // };
+  const handleGetString = () => {
+    scanForDevices();
+  };
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
@@ -106,7 +141,7 @@ export default function GroupDevice({navigation}) {
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
         <View style={styles.group__controller}>
-          {/* CLEAR DEVICES */}
+          {/* BUTTON */}
           <TouchableOpacity
             onPress={showArray}
             style={[
@@ -151,65 +186,33 @@ export default function GroupDevice({navigation}) {
       )}
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            marginTop: res * 0.05,
-          }}>
-          <TextInput
-            placeholder="QR Code"
-            value={qrcodeInput}
-            style={{width: '30%'}}
-            onChangeText={text => setQrcodeInput(text)}
-          />
-          <TextInput
-            placeholder="Steps"
-            keyboardType="numeric"
-            value={stepsInput}
-            style={{width: '30%'}}
-            onChangeText={text => setStepsInput(text)}
-          />
-          <TextInput
-            placeholder="Time"
-            keyboardType="numeric"
-            value={timeInput}
-            style={{width: '30%'}}
-            onChangeText={text => setTimeInput(text)}
-          />
-          <TextInput
-            placeholder="Distance"
-            keyboardType="numeric"
-            value={distanceInput}
-            style={{width: '30%'}}
-            onChangeText={text => setDistanceInput(text)}
-          />
-          <TextInput
-            placeholder="Calories"
-            keyboardType="numeric"
-            value={caloriesInput}
-            style={{width: '30%'}}
-            onChangeText={text => setCaloriesInput(text)}
-          />
-          <TextInput
-            placeholder="Speed"
-            keyboardType="numeric"
-            value={speedInput}
-            style={{width: '30%'}}
-            onChangeText={text => setSpeedInput(text)}
-          />
-          <TextInput
-            placeholder="Flex"
-            keyboardType="numeric"
-            value={flexInput}
-            onChangeText={text => setFlexInput(text)}
-          />
-          <Button title="Submit" onPress={handleSubmit} />
-        </View>
+        {connectedDevice ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginTop: res * 0.05,
+            }}>
+            {/* <TextInput
+              placeholder="QR Code"
+              value={qrcodeInput}
+              style={{width: '30%'}}
+              onChangeText={text => setQrcodeInput(text)}
+            /> */}
+            <Text>{data}</Text>
+            <Button title="Submit" onPress={handleSubmit} />
+          </View>
+        ) : (
+          <></>
+        )}
         <View style={styles.group__content}>
           {deviceInfoArray.map((item, index) => (
-            <View style={[styles.group__item, styles.shadow]} key={index}>
+            <TouchableOpacity
+              // onPress={openModal}
+              onPress={() => handleGetString(item)}
+              style={[styles.group__item, styles.shadow]}
+              key={index}>
               {/* INFORMATION */}
               <View style={styles.group__item__info}>
                 <Image
@@ -219,8 +222,8 @@ export default function GroupDevice({navigation}) {
                 {/* QR */}
                 <View style={styles.group__item_qrcode_container}>
                   <Text style={styles.group__item_qrcode}>
-                    {/* {item.qrcode.substring(12)} */}
-                    {item.qrcode}
+                    {item.qrcode.substring(9)}
+                    {/* {item.qrcode} */}
                   </Text>
                 </View>
               </View>
@@ -271,16 +274,16 @@ export default function GroupDevice({navigation}) {
                   </View>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-      {/* STATS` */}
-
+      {/* ADD DEVICE */}
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
           <TouchableOpacity
             onPress={navigateToQRCode}
+            // onPress={openModal}
             style={styles.group__add_content}>
             <Icon name="add" style={styles.groupp__add_icon} />
           </TouchableOpacity>
@@ -288,6 +291,11 @@ export default function GroupDevice({navigation}) {
       ) : (
         <></>
       )}
+      <FlatList
+        contentContainerStyle={styles.modalFlatlistContiner}
+        data={allDevices}
+        renderItem={renderDeviceModalListItem}
+      />
     </View>
   );
 }

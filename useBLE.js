@@ -4,6 +4,7 @@ import {PermissionsAndroid, Platform} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
 
 import {atob, btoa} from 'react-native-quick-base64';
+import {useDeviceInfo} from './src/screens/GROUPING/DeviceInfoContext';
 
 const IOT__UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const IOT__TX__CHARACTERISTIC = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -15,6 +16,7 @@ function useBLE() {
   const [allDevices, setAllDevices] = useState([]);
   const [connectedDevice, setConnectedDevice] = useState(null);
   const [data, setData] = useState('Device data');
+  const {deviceInfoArray} = useDeviceInfo();
 
   const requestPermissions = async cb => {
     if (Platform.OS === 'android') {
@@ -72,6 +74,27 @@ function useBLE() {
       startStreamingData(deviceConnection);
     } catch (e) {
       console.log('FAILED TO CONNECT', e);
+    }
+  };
+  const connectToGroupDevice = async qrcode => {
+    try {
+      // Find the device with the matching cutQR in deviceInfoArray
+      const device = deviceInfoArray.find(item => item.qrcode === qrcode);
+
+      if (!device) {
+        console.log('Device not found in deviceInfoArray');
+        return;
+      }
+      console.log('CONNECTING');
+      const deviceConnection = await bleManager.connectToDevice(device.id); // Use device.cutQR as the
+      console.log('deviceConnection');
+      setConnectedDevice(deviceConnection);
+      bleManager.stopDeviceScan();
+      await deviceConnection.discoverAllServicesAndCharacteristics();
+      startStreamingData(deviceConnection);
+      console.log('Connected successfully.');
+    } catch (e) {
+      console.error('Error while connecting:', e);
     }
   };
 
@@ -148,6 +171,7 @@ function useBLE() {
     data,
     sendDataToRXCharacteristic,
     clearDevices,
+    connectToGroupDevice,
   };
 }
 

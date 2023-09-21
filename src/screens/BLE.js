@@ -101,7 +101,6 @@ const BLE = ({
   const hideModal = () => {
     setIsModalVisible(false);
   };
-
   //Open Modal, pass connection function
   const openModal = async () => {
     requestPermissions(isGranted => {
@@ -149,11 +148,10 @@ const BLE = ({
     ]);
   };
 
-  const handle = () => {
+  const handleClearData = () => {
     sendDataToRXCharacteristic('delete');
   };
   const handleGrouping = () => {
-    scanForDevices();
     navigation.navigate('GroupDevice');
   };
   return (
@@ -640,7 +638,7 @@ const BLE = ({
                   <View style={styles.button__group}>
                     <TouchableOpacity
                       style={[styles.button__container, styles.clear]}
-                      onPress={handle}>
+                      onPress={handleClearData}>
                       <Text style={[styles.button__title, styles.clear__title]}>
                         clear data
                       </Text>
