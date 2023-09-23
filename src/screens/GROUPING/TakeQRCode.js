@@ -14,13 +14,13 @@ import BackArrow from '../components/BackArrow.js';
 const res = Dimensions.get('window').height;
 
 export default function TakeQRCode({navigation}) {
-  const [qrcode, setQRCode] = useState('');
+  const [scanned, setScanned] = useState('');
   const handleQRCodeScanned = event => {
     const {data} = event;
-    setQRCode(data);
+    setScanned(data);
   };
-  if (qrcode != '') {
-    // const cutQR = qrcode.substring(3);
+  if (scanned != '') {
+    const qrcode = scanned.substring(3);
     navigation.navigate('TakePicture', {qrcode});
   }
   return (

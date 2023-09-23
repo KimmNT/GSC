@@ -4,6 +4,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Routing from './src/router/Routing';
 import {LogBox} from 'react-native';
 import {DeviceInfoProvider} from './src/screens/GROUPING/DeviceInfoContext';
+import WeirdCom from './src/screens/WeirdCom';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <DeviceInfoProvider>
       <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+      {/* <WeirdCom /> */}
     </DeviceInfoProvider>
 
     // <TakeQRCode />

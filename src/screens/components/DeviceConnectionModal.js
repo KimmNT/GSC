@@ -28,6 +28,7 @@ const DeviceModal = props => {
   const [showMismatchAlert, setShowMismatchAlert] = useState(false);
   const [scanned, setScanned] = useState(false); // Add a state variable to track if QR code is scanned
 
+  // console.log('REPEAT MODAL');
   //Change QR to empty string -> Open camera
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -35,6 +36,8 @@ const DeviceModal = props => {
     }, 5000);
     return () => clearTimeout(timeout);
   }, [qrcode]);
+
+  console.log(qrcode);
 
   //Convert QR code
   const cutQR = qrcode.substring(3);
@@ -110,7 +113,6 @@ const DeviceModal = props => {
           data={devices}
           renderItem={renderDeviceModalListItem}
         />
-        {console.log(renderDeviceModalListItem)}
       </SafeAreaView>
       {/* Alert */}
       {showMismatchAlert && scanned && (

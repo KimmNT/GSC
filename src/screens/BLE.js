@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import DeviceModal from './components/DeviceConnectionModal';
+import GroupDevice from './GROUPING/GroupDevice';
 import Loading from './components/Loading';
 import useBLE from '../../useBLE';
 import Svg, {G, Circle} from 'react-native-svg';
@@ -51,6 +52,7 @@ const BLE = ({
     clearDevices,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isGroupModal, setIsGroupModal] = useState(false);
 
   //split the data
   const dataSplited = data.split('|');
@@ -79,16 +81,16 @@ const BLE = ({
 
   //CLOCK
   const [clock, setClock] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setClock(new Date());
-      sendDataToRXCharacteristic('read');
-    }, 5000);
-    // Clean up the interval on component unmount
-    return () => {
-      clearInterval(timer);
-    };
-  }, [clock]);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setClock(new Date());
+  //     sendDataToRXCharacteristic('read');
+  //   }, 5000);
+  //   // Clean up the interval on component unmount
+  //   return () => {
+  //     clearInterval(timer);
+  //   };
+  // }, [clock]);
 
   const hours = clock.getHours().toString().padStart(2, '0');
   const minutes = clock.getMinutes().toString().padStart(2, '0');
@@ -101,6 +103,9 @@ const BLE = ({
   const hideModal = () => {
     setIsModalVisible(false);
   };
+  const hideGroupModal = () => {
+    setIsGroupModal(false);
+  };
   //Open Modal, pass connection function
   const openModal = async () => {
     requestPermissions(isGranted => {
@@ -109,6 +114,9 @@ const BLE = ({
         scanForDevices();
       }
     });
+  };
+  const handleGrouping = () => {
+    navigation.navigate('GroupDevice');
   };
   //Calories - Donut chart
   const halfCircle = radius + strokeWidth;
@@ -151,9 +159,7 @@ const BLE = ({
   const handleClearData = () => {
     sendDataToRXCharacteristic('delete');
   };
-  const handleGrouping = () => {
-    navigation.navigate('GroupDevice');
-  };
+
   return (
     <View style={styles.container}>
       <View style={styles.container}>
@@ -502,9 +508,9 @@ const BLE = ({
                     {/* ITEM - HEATMAP */}
                     <View style={[styles.stat__item, styles.disable]}>
                       {/* STAT ITEM CONTENT */}
-                      {/* <View style={[styles.stat__item_content]}> */}
-                      {/* HEAD ITEM */}
-                      {/* <View style={styles.item__head}>
+                      <View style={[styles.stat__item_content]}>
+                        {/* HEAD ITEM */}
+                        {/* <View style={styles.item__head}>
                           <View
                             style={[styles.stat__icon, styles.heatmap__blur]}>
                             <Icon
@@ -514,9 +520,9 @@ const BLE = ({
                           </View>
                           <Text style={styles.stat__name}>Heat map</Text>
                         </View> */}
-                      {/* MAP */}
-                      <View style={styles.map__container}>
-                        {/* <View style={styles.map__disable}></View>
+                        {/* MAP */}
+                        {/* <View style={styles.map__container}>
+                          <View style={styles.map__disable}></View>
                           <MapView
                             style={styles.map}
                             provider={'google'}

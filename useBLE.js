@@ -76,27 +76,6 @@ function useBLE() {
       console.log('FAILED TO CONNECT', e);
     }
   };
-  const connectToGroupDevice = async qrcode => {
-    try {
-      // Find the device with the matching cutQR in deviceInfoArray
-      const device = deviceInfoArray.find(item => item.qrcode === qrcode);
-
-      if (!device) {
-        console.log('Device not found in deviceInfoArray');
-        return;
-      }
-      console.log('CONNECTING');
-      const deviceConnection = await bleManager.connectToDevice(device.id); // Use device.cutQR as the
-      console.log('deviceConnection');
-      setConnectedDevice(deviceConnection);
-      bleManager.stopDeviceScan();
-      await deviceConnection.discoverAllServicesAndCharacteristics();
-      startStreamingData(deviceConnection);
-      console.log('Connected successfully.');
-    } catch (e) {
-      console.error('Error while connecting:', e);
-    }
-  };
 
   const disconnectFromDevice = () => {
     console.log('DISCONNECTED');
@@ -171,7 +150,6 @@ function useBLE() {
     data,
     sendDataToRXCharacteristic,
     clearDevices,
-    connectToGroupDevice,
   };
 }
 
