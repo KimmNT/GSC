@@ -63,7 +63,6 @@ function useBLE() {
     console.log('STOP SCANNING');
     bleManager.stopDeviceScan();
   };
-
   const connectToDevice = async device => {
     console.log('CONNECTING');
     try {

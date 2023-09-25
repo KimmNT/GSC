@@ -81,16 +81,16 @@ const BLE = ({
 
   //CLOCK
   const [clock, setClock] = useState(new Date());
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setClock(new Date());
-  //     sendDataToRXCharacteristic('read');
-  //   }, 5000);
-  //   // Clean up the interval on component unmount
-  //   return () => {
-  //     clearInterval(timer);
-  //   };
-  // }, [clock]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setClock(new Date());
+      sendDataToRXCharacteristic('read');
+    }, 5000);
+    // Clean up the interval on component unmount
+    return () => {
+      clearInterval(timer);
+    };
+  }, [clock]);
 
   const hours = clock.getHours().toString().padStart(2, '0');
   const minutes = clock.getMinutes().toString().padStart(2, '0');
