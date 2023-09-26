@@ -425,6 +425,7 @@ const styles = StyleSheet.create({
   },
   device__count: {
     fontWeight: '900',
+    color: '#000',
   },
   group__control_btn: {
     paddingHorizontal: res * 0.035,
