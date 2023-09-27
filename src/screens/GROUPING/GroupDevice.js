@@ -284,11 +284,13 @@ export default function GroupDevice({navigation, route}) {
           <View style={styles.group__item_imagelist}>
             {imgArray.map((img, index) => (
               <View style={styles.group__item_imagelist_item}>
-                <Image
-                  key={index}
-                  source={{uri: img}}
-                  style={styles.group__item_image}
-                />
+                <View style={[styles.group__item_image_layer, styles.shadow]}>
+                  <Image
+                    key={index}
+                    source={{uri: img}}
+                    style={styles.group__item_image}
+                  />
+                </View>
               </View>
             ))}
           </View>
@@ -470,6 +472,14 @@ const styles = StyleSheet.create({
   group__item_imagelist_item: {
     width: '100%',
     height: res * 0.15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  group__item_image_layer: {
+    width: res * 0.12,
+    height: res * 0.12,
+    borderRadius: (res * 0.12) / 2,
+    backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
