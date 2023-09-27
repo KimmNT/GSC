@@ -86,7 +86,6 @@ export default function GroupDevice({navigation, route}) {
     item => {
       const nameSplit = item.item.name.split('-');
       const idName = [nameSplit[1]].toString();
-      console.log(item.item.id);
       //Scan for Android
       if (Platform.OS === 'android') {
         if (idName === getQR) {
@@ -161,7 +160,6 @@ export default function GroupDevice({navigation, route}) {
   };
   //DISCONNECT TO SCAN DEVICES
   const handleDisconnect = () => {
-    console.log('DISCONNECT PRESSED');
     disconnectFromDevice();
     setGetQR('');
     setIsRunning(false);
@@ -172,18 +170,11 @@ export default function GroupDevice({navigation, route}) {
   useEffect(() => {
     if (isRunning) {
       setTimeout(() => {
-        // console.log('DISCONNECT PRESSED');
-        // disconnectFromDevice();
-        // setGetQR('');
-        // setUpdate(!update);
-        // setIsRunning(false);
         setIsRunning(false);
         setIsDone(false);
       }, qrArrayTotalTimeRun);
     }
   }, [isRunning]);
-
-  console.log(imgArray);
 
   return (
     <View style={styles.group__container}>
