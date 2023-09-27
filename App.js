@@ -20,7 +20,7 @@ const App = () => {
   return (
     <DeviceInfoProvider>
       <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
-      {/* <WeirdCom /> */}
+      {/* <Routing/> */}
     </DeviceInfoProvider>
 
     // <TakeQRCode />

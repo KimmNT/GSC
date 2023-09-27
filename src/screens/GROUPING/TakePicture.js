@@ -51,7 +51,7 @@ function CameraScreen({navigation, route}) {
   };
   const navigateToGroup = () => {
     addDeviceInfo(deviceInfor);
-    navigation.navigate('GroupDevice', {qrcode});
+    navigation.navigate('GroupDevice', {capturedImage});
   };
 
   return (

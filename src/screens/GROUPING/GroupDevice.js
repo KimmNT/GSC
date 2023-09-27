@@ -1,24 +1,21 @@
 import {
   Alert,
-  Button,
   Dimensions,
   FlatList,
   Image,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   Platform,
-  Modal,
 } from 'react-native';
 import useBLE from '../../../useBLE';
 import React, {useCallback, useEffect, useState} from 'react';
 import BackArrow from '../components/BackArrow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useDeviceInfo} from './DeviceInfoContext';
-import GroupDeviceModal from './GroupDeviceConnectionModal';
+import {useFocusEffect} from '@react-navigation/native';
 
 const res = Dimensions.get('window').height;
 
@@ -30,7 +27,6 @@ export default function GroupDevice({navigation, route}) {
     data,
     disconnectFromDevice,
     sendDataToRXCharacteristic,
-    connectedDevice,
   } = useBLE();
 
   const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
@@ -38,6 +34,7 @@ export default function GroupDevice({navigation, route}) {
   const [getQR, setGetQR] = useState('');
   const [update, setUpdate] = useState(false);
   const [qrArray, setQRArray] = useState([]);
+  const [imgArray, setImgArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(true);
 
@@ -61,6 +58,16 @@ export default function GroupDevice({navigation, route}) {
     return () => clearInterval(qrInterval);
   }, [qrArray]);
 
+  //HANDLE PUSH IMAGE URI VALUE INTO NEW ARRAY
+  useFocusEffect(
+    useCallback(() => {
+      const newImg = route.params?.capturedImage;
+      if (newImg) {
+        setImgArray([...imgArray, newImg]);
+      }
+    }, [route.params?.capturedImage]),
+  );
+
   //COUNT ITEMS IN qrArray
   const qrArrayTotalTimeRun = 10000 * qrArray.length + 5000;
 
@@ -79,9 +86,10 @@ export default function GroupDevice({navigation, route}) {
     item => {
       const nameSplit = item.item.name.split('-');
       const idName = [nameSplit[1]].toString();
+      console.log(item.item.id);
       //Scan for Android
       if (Platform.OS === 'android') {
-        if (item.item.id === getQR) {
+        if (idName === getQR) {
           connectToDevice(item.item);
         } else {
           return true;
@@ -123,10 +131,8 @@ export default function GroupDevice({navigation, route}) {
       {
         text: 'OK',
         onPress: () => {
-          clearDeviceInfoArray(),
-            setQRArray([]),
-            setGetQR(''),
-            disconnectFromDevice();
+          clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
+          setGetQR(''), disconnectFromDevice();
         },
       },
     ]);
@@ -153,13 +159,6 @@ export default function GroupDevice({navigation, route}) {
       deviceInfoArray[existingIndex] = newDeviceInfo;
     }
   };
-  //GET DEVICE QR CODE
-  // const handleGetString = device => {
-  //   disconnectFromDevice();
-  //   setGetQR('');
-  //   setGetQR(device.qrcode);
-  //   console.log('NEW DEVICE ADDED');
-  // };
   //DISCONNECT TO SCAN DEVICES
   const handleDisconnect = () => {
     console.log('DISCONNECT PRESSED');
@@ -184,9 +183,7 @@ export default function GroupDevice({navigation, route}) {
     }
   }, [isRunning]);
 
-  // console.log(`isRunning value: ${isRunning}`);
-  // console.log(`isDone value: ${isDone}`);
-  // console.log(`getQR value :${getQR}`);
+  console.log(imgArray);
 
   return (
     <View style={styles.group__container}>
@@ -281,86 +278,96 @@ export default function GroupDevice({navigation, route}) {
       )}
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
+        {/* DEBUG THE DATA */}
+        {/* <Text
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#000',
+            width: '100%',
+          }}>
+          {data}
+        </Text> */}
         <View style={styles.group__content}>
-          {deviceInfoArray.map((device, index) => (
-            <TouchableOpacity
-              // onPress={() => handleGetString(device)}
-              style={[styles.group__item, styles.shadow]}
-              key={index}>
-              {/* INFORMATION */}
-              <View style={styles.group__item__info}>
+          <View style={styles.group__item_imagelist}>
+            {imgArray.map((img, index) => (
+              <View style={styles.group__item_imagelist_item}>
                 <Image
-                  source={{uri: device.capturedImage}}
+                  key={index}
+                  source={{uri: img}}
                   style={styles.group__item_image}
                 />
-                {/* QR */}
-                <View style={styles.group__item_qrcode_container}>
-                  <Text style={styles.group__item_qrcode}>
-                    {device.qrcode.substring(9)}
-                    {/* {item.qrcode} */}
-                  </Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.group__item_information}>
+            {deviceInfoArray.map((device, index) => (
+              <View style={[styles.group__item, styles.shadow]} key={index}>
+                {/* STATS */}
+                <View style={styles.group__item_stat}>
+                  {/* STEPS */}
+                  <View style={styles.stat__info}>
+                    <Icon
+                      name="run-circle"
+                      style={[styles.stat__icon, styles.step]}
+                    />
+                    <View style={styles.stat__number_container}>
+                      <Text style={styles.stat__number}>{device.steps}</Text>
+                      <Text style={styles.stat__unit}>steps</Text>
+                    </View>
+                  </View>
+                  {/* TIME */}
+                  <View style={styles.stat__info}>
+                    <Icon
+                      name="schedule"
+                      style={[styles.stat__icon, styles.time]}
+                    />
+                    <View style={styles.stat__number_container}>
+                      <Text style={styles.stat__number}>{device.time}</Text>
+                      <Text style={styles.stat__unit}>time</Text>
+                    </View>
+                  </View>
+                  {/* CALORIES */}
+                  <View style={styles.stat__info}>
+                    <Icon
+                      name="local-fire-department"
+                      style={[styles.stat__icon, styles.calories]}
+                    />
+                    <View style={styles.stat__number_container}>
+                      <Text style={styles.stat__number}>{device.calories}</Text>
+                      <Text style={styles.stat__unit}>kcal</Text>
+                    </View>
+                  </View>
+                  {/* DISTANCE */}
+                  <View style={styles.stat__info}>
+                    <Icon
+                      name="directions-walk"
+                      style={[styles.stat__icon, styles.distance]}
+                    />
+                    <View style={styles.stat__number_container}>
+                      <Text style={styles.stat__number}>{device.distance}</Text>
+                      <Text style={styles.stat__unit}>km</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-              {/* STATS */}
-              <View style={styles.group__item_stat}>
-                {/* STEPS */}
-                <View style={styles.stat__info}>
-                  <Icon
-                    name="run-circle"
-                    style={[styles.stat__icon, styles.step]}
-                  />
-                  <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>{device.steps}</Text>
-                    <Text style={styles.stat__unit}>steps</Text>
-                  </View>
-                </View>
-                {/* TIME */}
-                <View style={styles.stat__info}>
-                  <Icon
-                    name="schedule"
-                    style={[styles.stat__icon, styles.time]}
-                  />
-                  <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>{device.time}</Text>
-                    <Text style={styles.stat__unit}>time</Text>
-                  </View>
-                </View>
-                {/* CALORIES */}
-                <View style={styles.stat__info}>
-                  <Icon
-                    name="local-fire-department"
-                    style={[styles.stat__icon, styles.calories]}
-                  />
-                  <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>{device.calories}</Text>
-                    <Text style={styles.stat__unit}>kcal</Text>
-                  </View>
-                </View>
-                {/* DISTANCE */}
-                <View style={styles.stat__info}>
-                  <Icon
-                    name="directions-walk"
-                    style={[styles.stat__icon, styles.distance]}
-                  />
-                  <View style={styles.stat__number_container}>
-                    <Text style={styles.stat__number}>{device.distance}</Text>
-                    <Text style={styles.stat__unit}>km</Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+            ))}
+          </View>
         </View>
       </ScrollView>
       {/* ADD DEVICE */}
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
-          <TouchableOpacity
-            onPress={navigateToQRCode}
-            // onPress={openModal}
-            style={styles.group__add_content}>
-            <Icon name="add" style={styles.groupp__add_icon} />
-          </TouchableOpacity>
+          {isRunning ? (
+            <></>
+          ) : (
+            <TouchableOpacity
+              onPress={navigateToQRCode}
+              style={styles.group__add_content}>
+              <Icon name="add" style={styles.groupp__add_icon} />
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <></>
@@ -440,7 +447,6 @@ const styles = StyleSheet.create({
   group__refresh: {
     backgroundColor: '#4CAF50',
   },
-
   group__control_icon: {
     fontSize: res * 0.025,
     fontWeight: '600',
@@ -453,7 +459,6 @@ const styles = StyleSheet.create({
   group__content: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
     paddingHorizontal: res * 0.04,
     marginBottom: res * 0.1,
   },
@@ -467,18 +472,27 @@ const styles = StyleSheet.create({
     shadowRadius: 5.68,
     elevation: 12,
   },
+  group__item_imagelist: {
+    width: '30%',
+    gap: 20,
+  },
+  group__item_imagelist_item: {
+    width: '100%',
+    height: res * 0.15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  group__item_information: {
+    width: '65%',
+    gap: 20,
+  },
   group__item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    height: res * 0.15,
     backgroundColor: '#FFF',
-    marginBottom: res * 0.02,
-    padding: res * 0.02,
     borderRadius: 10,
-  },
-  group__item__info: {
-    width: '30%',
-    alignItems: 'center',
   },
   group__item_image: {
     width: res * 0.1,
@@ -500,19 +514,20 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   group__item_stat: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignContent: 'stretch',
     flexWrap: 'wrap',
-    width: '65%',
+    paddingHorizontal: res * 0.01,
   },
   stat__info: {
-    width: '48%',
+    width: '40%',
     flexDirection: 'row',
     alignItems: 'center',
   },
   stat__icon: {
-    fontSize: res * 0.03,
+    fontSize: res * 0.025,
     marginRight: res * 0.01,
   },
   step: {
@@ -537,6 +552,7 @@ const styles = StyleSheet.create({
   },
   stat__unit: {
     color: '#000',
+    fontSize: res * 0.015,
   },
   group__add_container: {
     position: 'absolute',
@@ -547,9 +563,9 @@ const styles = StyleSheet.create({
   },
   group__add_content: {
     backgroundColor: '#15212D',
-    width: res * 0.11,
-    height: res * 0.11,
-    borderRadius: (res * 0.11) / 2,
+    width: res * 0.09,
+    height: res * 0.09,
+    borderRadius: (res * 0.09) / 2,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: res * 0.01,

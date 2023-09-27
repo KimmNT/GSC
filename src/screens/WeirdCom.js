@@ -1,33 +1,41 @@
-import {Button, StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {StyleSheet, Text, View, Button, FlatList} from 'react-native';
+import React, {useState, useCallback} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 
-export default function WeirdCom() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [isDone, setIsDone] = useState(false);
+export default function WeirdCom({navigation, route}) {
+  const [textArray, setTextArray] = useState([]);
 
+  useFocusEffect(
+    useCallback(() => {
+      const newText = route.params?.text;
+      if (newText) {
+        setTextArray([...textArray, newText]);
+      }
+    }, [route.params?.text]),
+  );
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      {isRunning ? (
-        <></>
-      ) : (
-        <View>
-          {isDone ? (
-            <View>
-              <Text>IT'S ALREADY RUN AND DONE</Text>
-            </View>
-          ) : (
-            <View>
-              <Text>
-                IT'S ALREADY RUN BUT NOT DONE UNTIL YOU PRESS THE BUTTON BELOW
-              </Text>
-              <Button
-                onPress={() => setIsDone(true)}
-                title="PRESS HERE TO MAKE IT DONE"
-              />
-            </View>
-          )}
-        </View>
-      )}
+    <View
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#000',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Button
+        title="Go to Text Entry"
+        onPress={() =>
+          navigation.navigate('MoreWeirdCom', {
+            onTextEntered: text => setTextArray([...textArray, text]),
+          })
+        }
+      />
+      <FlatList
+        data={textArray}
+        renderItem={({item}) => <Text>{item}</Text>}
+        keyExtractor={(item, index) => index.toString()}
+      />
     </View>
   );
 }
