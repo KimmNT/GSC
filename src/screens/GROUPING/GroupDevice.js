@@ -21,6 +21,7 @@ const res = Dimensions.get('window').height;
 
 export default function GroupDevice({navigation, route}) {
   const {
+    requestPermissions,
     scanForDevices,
     allDevices,
     connectToDevice,
@@ -67,7 +68,6 @@ export default function GroupDevice({navigation, route}) {
       }
     }, [route.params?.capturedImage]),
   );
-
   //COUNT ITEMS IN qrArray
   const qrArrayTotalTimeRun = 10000 * qrArray.length + 5000;
 
@@ -80,7 +80,6 @@ export default function GroupDevice({navigation, route}) {
     }, 5000);
     return () => clearInterval(sendInterval);
   }, [update]);
-
   //RENDER ITEMS AND CONNECTION IF MATCH QRCODE
   const renderDeviceModalListItem = useCallback(
     item => {
@@ -115,10 +114,14 @@ export default function GroupDevice({navigation, route}) {
       }, index * 10000);
     });
   };
-  //NAVIGATE TO QRCODE
+  //NAVIGATE TO  QRCODE
   const navigateToQRCode = () => {
-    scanForDevices();
-    navigation.navigate('TakeQRCode');
+    requestPermissions(isGranted => {
+      if (isGranted) {
+        scanForDevices();
+        navigation.navigate('TakeQRCode');
+      }
+    });
   };
   //CLEAR DEVICES LIST
   const handleClearGroup = () => {
@@ -176,6 +179,7 @@ export default function GroupDevice({navigation, route}) {
     }
   }, [isRunning]);
 
+  console.log(imgArray);
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>

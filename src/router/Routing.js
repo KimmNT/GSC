@@ -9,10 +9,6 @@ import GroupDevice from '../screens/GROUPING/GroupDevice';
 import TakeQRCode from '../screens/GROUPING/TakeQRCode';
 import TakePicture from '../screens/GROUPING/TakePicture';
 
-//TESTING
-import MoreWeirdCom from '../screens/MoreWeirdCom';
-import WeirdCom from '../screens/WeirdCom';
-
 const Stack = createNativeStackNavigator();
 
 export default function Router() {
@@ -29,14 +25,6 @@ export default function Router() {
         <Stack.Screen name="TakePicture" component={TakePicture} />
       </Stack.Navigator>
     </NavigationContainer>
-    // <NavigationContainer>
-    //   <Stack.Navigator
-    //     screenOptions={{headerShown: false}}
-    //     initialRouteName="WeirdCom">
-    //     <Stack.Screen name="WeirdCom" component={WeirdCom} />
-    //     <Stack.Screen name="MoreWeirdCom" component={MoreWeirdCom} />
-    //   </Stack.Navigator>
-    // </NavigationContainer>
   );
 }
 
