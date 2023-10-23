@@ -30,8 +30,8 @@ target 'SMiosV2' do
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path
   # React Native QR Scanner dependencies
-  # permissions_path = '../node_modules/react-native-permissions/ios'
-  # pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
   config = use_native_modules!
 
   # Flags change depending on the env values.

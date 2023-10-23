@@ -30,6 +30,7 @@ import Medal from '../../assets/images/medal.png';
 
 //ICON
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import GetClassesModel from './components/GetClassesModel';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const BLE = ({
@@ -52,7 +53,9 @@ const BLE = ({
     clearDevices,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isGroupModal, setIsGroupModal] = useState(false);
+  const [isGetClassVisibal, setGetClassVisible] = useState(false);
+  const [classIdChose, setClassIdChose] = useState('');
+  const [classNameChose, setClassNameChose] = useState('');
 
   //split the data
   const dataSplited = data.split('|');
@@ -103,8 +106,8 @@ const BLE = ({
   const hideModal = () => {
     setIsModalVisible(false);
   };
-  const hideGroupModal = () => {
-    setIsGroupModal(false);
+  const hideGetClass = () => {
+    setGetClassVisible(false);
   };
   //Open Modal, pass connection function
   const openModal = async () => {
@@ -115,6 +118,12 @@ const BLE = ({
       }
     });
   };
+
+  //OPEN GetClassModel
+  const openGetClassModel = () => {
+    setGetClassVisible(true);
+  };
+  //NAVIGATE TO GROUP
   const handleGrouping = () => {
     navigation.navigate('GroupDevice');
   };
@@ -158,6 +167,35 @@ const BLE = ({
 
   const handleClearData = () => {
     sendDataToRXCharacteristic('delete');
+  };
+
+  const handleClassId = classId => {
+    setClassIdChose(classId);
+  };
+
+  const handleClassName = className => {
+    setClassNameChose(className);
+  };
+  const handleGetStudent = () => {
+    if (classIdChose === '') {
+      Alert.alert(
+        'Missing some fields',
+        "You haven't selected your class/club. \n Disconnect from the current device and choose your class/club first",
+      );
+    } else {
+      disconnectFromDevice();
+      navigation.navigate('Student', {
+        classIdChose,
+        time,
+        steps,
+        calories,
+        acceleration,
+        distance,
+        jumps,
+        run_avg,
+        run_max,
+      });
+    }
   };
 
   return (
@@ -640,7 +678,15 @@ const BLE = ({
                       </View>
                     </View>
                   </View>
-                  {/* BUTTON SAVE OR RESET */}
+                  {/* BUTTON */}
+                  <View style={styles.button__group}>
+                    <TouchableOpacity
+                      style={[styles.button__save_container]}
+                      onPress={handleGetStudent}>
+                      <Text style={[styles.save__title]}>save information</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {/* BUTTONS */}
                   <View style={styles.button__group}>
                     <TouchableOpacity
                       style={[styles.button__container, styles.clear]}
@@ -690,22 +736,36 @@ const BLE = ({
                     <Text style={[styles.logo__name, styles.end]}>coach</Text>
                   </View>
                 </View>
+                {classNameChose ? (
+                  <View style={styles.class__name_container}>
+                    <Text style={styles.class__name}>{classNameChose}</Text>
+                  </View>
+                ) : (
+                  <></>
+                )}
                 <View style={styles.welcome__btn_group}>
-                  <View style={styles.welcome__scan}>
-                    <Text style={styles.scan__text}>Scan your device</Text>
+                  <View style={styles.welcome__btn}>
                     <TouchableOpacity
-                      style={styles.scan__box}
+                      style={styles.side__box}
+                      onPress={openGetClassModel}>
+                      <Icon style={styles.side__icon} name="school" />
+                    </TouchableOpacity>
+                    <Text style={styles.side__text}>Classes</Text>
+                  </View>
+                  <View style={styles.welcome__btn}>
+                    <TouchableOpacity
+                      style={styles.main__box}
                       onPress={openModal}>
-                      <Icon name="document-scanner" style={styles.scan__icon} />
+                      <Icon name="document-scanner" style={styles.main__icon} />
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.welcome__group}>
-                    <Text style={styles.group__text}>Group your devices</Text>
+                  <View style={styles.welcome__btn}>
                     <TouchableOpacity
-                      style={styles.group__box}
+                      style={styles.side__box}
                       onPress={handleGrouping}>
-                      <Icon name="group-add" style={styles.group__icon} />
+                      <Icon name="group-add" style={styles.side__icon} />
                     </TouchableOpacity>
+                    <Text style={styles.side__text}>Group</Text>
                   </View>
                 </View>
               </View>
@@ -721,6 +781,12 @@ const BLE = ({
         devices={allDevices}
         stopScan={stopDevice}
         clearDevice={clearDevices}
+      />
+      <GetClassesModel
+        closeModal={hideGetClass}
+        visible={isGetClassVisibal}
+        sendClassId={handleClassId}
+        sendClassName={handleClassName}
       />
     </View>
   );
@@ -792,11 +858,6 @@ const styles = StyleSheet.create({
     margin: res * 0.02,
     borderRadius: 10,
   },
-  logo__image: {
-    width: res * 0.25,
-    height: res * 0.25,
-    resizeMode: 'cover',
-  },
   logo__name: {
     textTransform: 'uppercase',
     fontWeight: '900',
@@ -811,56 +872,64 @@ const styles = StyleSheet.create({
     // width: '100%',
     alignItems: 'flex-end',
   },
+  class__name_container: {
+    position: 'absolute',
+    top: res * 0.035,
+    right: 0,
+    paddingHorizontal: res * 0.01,
+    paddingVertical: res * 0.01,
+    backgroundColor: '#FFF',
+    borderRadius: 5,
+  },
+  class__name: {
+    color: '#000',
+    fontSize: res * 0.02,
+    fontWeight: '600',
+  },
   welcome__btn_group: {
     position: 'absolute',
-    bottom: res * 0.035,
-    right: 0,
-    gap: res * 0.05,
-  },
-  welcome__scan: {
+    bottom: 0,
+    backgroundColor: 'rgba(250, 250, 250, 0.1)',
+    width: '100%',
     flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 20,
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.01,
+    borderRadius: res * 0.02,
   },
-  scan__text: {
-    fontSize: res * 0.025,
-    color: '#FFF',
-    fontWeight: '600',
-  },
-  scan__box: {
-    width: res * 0.07,
-    height: res * 0.07,
-    borderRadius: (res * 0.07) / 2,
-    backgroundColor: '#4CAF50',
+  welcome__btn: {
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: res * 0.02,
   },
-  scan__icon: {
-    fontSize: res * 0.03,
-    color: '#FFF',
-  },
-  welcome__group: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 20,
-  },
-  group__text: {
-    fontSize: res * 0.02,
-    color: '#FFF',
-    fontWeight: '600',
-  },
-  group__box: {
+  side__box: {
     width: res * 0.05,
     height: res * 0.05,
     borderRadius: (res * 0.05) / 2,
-    backgroundColor: '#FFF',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
   },
-  group__icon: {
-    fontSize: res * 0.025,
+  side__icon: {
+    fontSize: res * 0.02,
     color: '#4CAF50',
+  },
+  side__text: {
+    fontSize: res * 0.015,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  main__box: {
+    width: res * 0.09,
+    height: res * 0.09,
+    borderRadius: (res * 0.09) / 2,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  main__icon: {
+    fontSize: res * 0.04,
+    color: '#FFF',
   },
 
   //STATS STYLE --------------------------------------------------------------------------------
@@ -1012,6 +1081,12 @@ const styles = StyleSheet.create({
   jump: {
     color: '#FFA726',
   },
+  speed__blur: {
+    backgroundColor: '#4F2E2A',
+  },
+  speed: {
+    color: '#FF5722',
+  },
   heatmap__blur: {
     backgroundColor: '#4D292F',
   },
@@ -1130,12 +1205,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     // opacity: 0.6,
   },
-  speed__blur: {
-    backgroundColor: '#4F2E2A',
-  },
-  speed: {
-    color: '#FF5722',
-  },
   multi: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1162,19 +1231,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: res * 0.05,
+    marginTop: res * 0.03,
   },
   button__container: {
-    width: '45%',
+    width: '46%',
     paddingVertical: res * 0.03,
     alignItems: 'center',
     borderRadius: 5,
+  },
+  button__save_container: {
+    width: '100%',
+    paddingVertical: res * 0.03,
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#4CAF50',
+  },
+  save__title: {
+    textTransform: 'uppercase',
+    fontSize: res * 0.02,
+    fontWeight: '600',
+    color: '#FFF',
   },
   clear: {
     backgroundColor: '#FFF',
   },
   disconnect: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#15212D',
   },
   button__title: {
     textTransform: 'uppercase',

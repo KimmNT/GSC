@@ -37,8 +37,6 @@ const DeviceModal = props => {
     return () => clearTimeout(timeout);
   }, [qrcode]);
 
-  console.log(qrcode);
-
   //Convert QR code
   const cutQR = qrcode.substring(3);
 

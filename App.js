@@ -19,7 +19,8 @@ const App = () => {
   });
   return (
     <DeviceInfoProvider>
-      <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+      {/* <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider> */}
+      <Routing />
       {/* <WeirdCom /> */}
     </DeviceInfoProvider>
 

@@ -69,7 +69,8 @@ export default function GroupDevice({navigation, route}) {
     }, [route.params?.capturedImage]),
   );
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 10000 * qrArray.length + 5000;
+  const qrArrayTotalTimeRun = 4000 * qrArray.length + 4000;
+  //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
 
   //HANDLE SEND TO RX
   useEffect(() => {
@@ -77,9 +78,10 @@ export default function GroupDevice({navigation, route}) {
       sendDataToRXCharacteristic('read');
       handleSubmit();
       setUpdate(!update);
-    }, 5000);
+    }, 1000);
     return () => clearInterval(sendInterval);
   }, [update]);
+
   //RENDER ITEMS AND CONNECTION IF MATCH QRCODE
   const renderDeviceModalListItem = useCallback(
     item => {
@@ -111,7 +113,9 @@ export default function GroupDevice({navigation, route}) {
         setGetQR('');
         setGetQR(item);
         setIsRunning(true);
-      }, index * 10000);
+        disconnectFromDevice();
+        console.log(item);
+      }, index * 4000);
     });
   };
   //NAVIGATE TO  QRCODE
@@ -175,11 +179,11 @@ export default function GroupDevice({navigation, route}) {
       setTimeout(() => {
         setIsRunning(false);
         setIsDone(false);
+        setGetQR('');
       }, qrArrayTotalTimeRun);
     }
   }, [isRunning]);
 
-  console.log(imgArray);
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
