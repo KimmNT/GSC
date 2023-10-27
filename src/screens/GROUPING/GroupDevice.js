@@ -14,8 +14,10 @@ import useBLE from '../../../useBLE';
 import React, {useCallback, useEffect, useState} from 'react';
 import BackArrow from '../components/BackArrow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useDeviceInfo} from './DeviceInfoContext';
+import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
+import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
 import {useFocusEffect} from '@react-navigation/native';
+import GetClassesModel from '../components/GetClassesModel';
 
 const res = Dimensions.get('window').height;
 
@@ -32,23 +34,32 @@ export default function GroupDevice({navigation, route}) {
 
   const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
     useDeviceInfo();
+  const {studentInfoArray, clearStudentInfoArray, addStudentInfo} =
+    useStudentInfo();
   const [getQR, setGetQR] = useState('');
   const [update, setUpdate] = useState(false);
   const [qrArray, setQRArray] = useState([]);
   const [imgArray, setImgArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(true);
+  const [isGetClassVisibal, setGetClassVisible] = useState(false);
+  const [classIdChose, setClassIdChose] = useState('');
+  const [classNameChose, setClassNameChose] = useState(
+    'Choose your class/club',
+  );
 
   //HANDLE SPLIT DATA
   const dataSplited = data.split('|');
   id = parseInt([dataSplited[0]]);
   interval = parseInt([dataSplited[1]]);
-  dataTime = Math.round((id * (interval / 1000)) / 60);
-  dataSteps = parseInt([dataSplited[2]]);
-  dataFlex = parseFloat([dataSplited[5]]);
-  dataRun = parseFloat(([dataSplited[8]] * 3.6).toFixed(1));
-  dataCalories = Math.round(dataSteps * 0.03);
-  dataDistance = parseFloat((Math.floor(dataSteps * 0.2) / 1000).toFixed(2));
+  dataTime = parseInt(Math.round((id * (interval / 1000)) / 60)).toFixed(2);
+  dataSteps = parseInt([dataSplited[2]]).toFixed(2);
+  dataFlex = parseFloat([dataSplited[5]]).toFixed(2);
+  dataRunAVG = parseFloat([dataSplited[9]] * 3.6).toFixed(2);
+  dataRunMaX = parseFloat(([dataSplited[10]] * 3.6).toFixed(2));
+  dataCalories = parseFloat(Math.round(dataSteps * 0.03)).toFixed(2);
+  dataDistance = parseFloat(Math.floor(dataSteps * 0.2) / 1000).toFixed(2);
+  dataJump = parseInt([dataSplited[6]]).toFixed(2);
 
   //HANDLE PUSH QRCODE VALUE INTO NEW ARRAY
   useEffect(() => {
@@ -59,17 +70,8 @@ export default function GroupDevice({navigation, route}) {
     return () => clearInterval(qrInterval);
   }, [qrArray]);
 
-  //HANDLE PUSH IMAGE URI VALUE INTO NEW ARRAY
-  useFocusEffect(
-    useCallback(() => {
-      const newImg = route.params?.capturedImage;
-      if (newImg) {
-        setImgArray([...imgArray, newImg]);
-      }
-    }, [route.params?.capturedImage]),
-  );
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 4000 * qrArray.length + 4000;
+  const qrArrayTotalTimeRun = 4000 * qrArray.length + 2000;
   //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
 
   //HANDLE SEND TO RX
@@ -123,7 +125,7 @@ export default function GroupDevice({navigation, route}) {
     requestPermissions(isGranted => {
       if (isGranted) {
         scanForDevices();
-        navigation.navigate('TakeQRCode');
+        navigation.navigate('TakeQRCode', {classIdChose});
       }
     });
   };
@@ -152,13 +154,15 @@ export default function GroupDevice({navigation, route}) {
     // Create a new device info object with the entered values
     const newDeviceInfo = {
       qrcode: getQR,
+      classId: classIdChose,
       steps: dataSteps,
       time: dataTime,
       distance: dataDistance,
       calories: dataCalories,
-      speed: dataRun,
+      speed__avg: dataRunAVG,
+      speed__max: dataRunMaX,
+      jump: dataJump,
       flex: dataFlex,
-      rank: (dataDistance + dataCalories + dataRun + dataFlex) / dataTime,
     };
     if (existingIndex !== -1) {
       // If an object with the same "qrcode" exists, update it
@@ -183,7 +187,24 @@ export default function GroupDevice({navigation, route}) {
       }, qrArrayTotalTimeRun);
     }
   }, [isRunning]);
-
+  //HIDE CLASS MODAL
+  const hideGetClass = () => {
+    setGetClassVisible(false);
+  };
+  //OPEN GetClassModel
+  const openGetClassModel = () => {
+    setGetClassVisible(true);
+  };
+  const handleClassId = classId => {
+    setClassIdChose(classId);
+  };
+  const handleClassName = className => {
+    setClassNameChose(className);
+  };
+  const handleSave = () => {
+    navigation.navigate('Submitting');
+  };
+  // console.log(studentInfoArray);
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
@@ -193,7 +214,14 @@ export default function GroupDevice({navigation, route}) {
           style={styles.group__quit}>
           <BackArrow />
         </TouchableOpacity>
-        <Text style={styles.group__text}>group devices</Text>
+        <View>
+          <Text style={styles.group__text}>group devices</Text>
+          <TouchableOpacity
+            onPress={openGetClassModel}
+            style={{backgroundColor: 'tomato'}}>
+            <Text style={{color: '#000'}}>{classNameChose}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
@@ -290,15 +318,18 @@ export default function GroupDevice({navigation, route}) {
         </Text> */}
         <View style={styles.group__content}>
           <View style={styles.group__item_imagelist}>
-            {imgArray.map((img, index) => (
+            {studentInfoArray.map((student, index) => (
               <View style={styles.group__item_imagelist_item}>
                 <View style={[styles.group__item_image_layer, styles.shadow]}>
                   <Image
                     key={index}
-                    source={{uri: img}}
+                    source={{uri: student.stuAva}}
                     style={styles.group__item_image}
                   />
                 </View>
+                <Text style={styles.group__item_qrcode}>
+                  {student.qrcode.substring(9, 15)}
+                </Text>
               </View>
             ))}
           </View>
@@ -360,6 +391,11 @@ export default function GroupDevice({navigation, route}) {
       {/* ADD DEVICE */}
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
+          <TouchableOpacity
+            onPress={handleSave}
+            style={styles.group__add_content}>
+            <Icon name="save" style={styles.groupp__add_icon} />
+          </TouchableOpacity>
           {isRunning ? (
             <></>
           ) : (
@@ -377,6 +413,12 @@ export default function GroupDevice({navigation, route}) {
         contentContainerStyle={styles.modalFlatlistContiner}
         data={allDevices}
         renderItem={renderDeviceModalListItem}
+      />
+      <GetClassesModel
+        closeModal={hideGetClass}
+        visible={isGetClassVisibal}
+        sendClassId={handleClassId}
+        sendClassName={handleClassName}
       />
     </View>
   );
@@ -479,7 +521,7 @@ const styles = StyleSheet.create({
   },
   group__item_imagelist_item: {
     width: '100%',
-    height: res * 0.15,
+    height: res * 0.2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -499,7 +541,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    height: res * 0.15,
+    height: res * 0.2,
     backgroundColor: '#FFF',
     borderRadius: 10,
   },
@@ -521,6 +563,10 @@ const styles = StyleSheet.create({
     fontSize: res * 0.02,
     fontWeight: '600',
     color: '#FFF',
+    backgroundColor: '#000',
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.005,
+    marginTop: res * 0.01,
   },
   group__item_stat: {
     width: '100%',

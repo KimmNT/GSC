@@ -106,6 +106,7 @@ const BLE = ({
   const hideModal = () => {
     setIsModalVisible(false);
   };
+  //HIDE CLASS MODAL
   const hideGetClass = () => {
     setGetClassVisible(false);
   };
@@ -195,6 +196,7 @@ const BLE = ({
         run_avg,
         run_max,
       });
+      // console.log(classIdChose);
     }
   };
 
@@ -900,7 +902,6 @@ const styles = StyleSheet.create({
   },
   welcome__btn: {
     alignItems: 'center',
-    gap: res * 0.02,
   },
   side__box: {
     width: res * 0.05,
@@ -918,6 +919,7 @@ const styles = StyleSheet.create({
     fontSize: res * 0.015,
     fontWeight: '600',
     color: '#FFF',
+    marginTop: res * 0.005,
   },
   main__box: {
     width: res * 0.09,

@@ -31,7 +31,7 @@ export default function GetClassesModel(props) {
   //FETCH DATA
   useEffect(() => {
     const apiKey = '251cb836e62cd90f35de2a2fe570133e643a182b';
-    const apiUrl = 'http://api-gibbon-genio.dev.ncs.int/api/getClassesForIoT';
+    const apiUrl = 'https://api.qlhv.geniofut.com/api/getClassesForIoT';
     const fetchData = async () => {
       try {
         const response = await axios.get(apiUrl, {

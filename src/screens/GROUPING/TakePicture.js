@@ -8,7 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
-import {useDeviceInfo} from './DeviceInfoContext';
+import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const res = Dimensions.get('window').height;
