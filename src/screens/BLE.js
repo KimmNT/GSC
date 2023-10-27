@@ -106,12 +106,9 @@ const BLE = ({
   const hideModal = () => {
     setIsModalVisible(false);
   };
-
-  //HIDE MODAL GET CLASSES
   const hideGetClass = () => {
     setGetClassVisible(false);
   };
-
   //Open Modal, pass connection function
   const openModal = async () => {
     requestPermissions(isGranted => {
@@ -126,7 +123,6 @@ const BLE = ({
   const openGetClassModel = () => {
     setGetClassVisible(true);
   };
-
   //NAVIGATE TO GROUP
   const handleGrouping = () => {
     navigation.navigate('GroupDevice');
@@ -156,7 +152,6 @@ const BLE = ({
     return {latitude, longitude};
   });
 
-  //DISCONNECT WITH THE CURRENT DEVICE
   const handleDisconnect = () => {
     Alert.alert('Disconnect warining!', 'Do you want to disconnect ?', [
       {
@@ -170,85 +165,37 @@ const BLE = ({
     ]);
   };
 
-  //CLEAR THE CURRENT DEVICE'S DATA
   const handleClearData = () => {
-    Alert.alert('Clear Warning', 'Do you want to clear all the information ?', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel clean'),
-      },
-      {
-        text: 'OK',
-        onPress: () => sendDataToRXCharacteristic('delete'),
-      },
-    ]);
+    sendDataToRXCharacteristic('delete');
   };
 
-  //TAKE THE CLASS ID SENT BACK FROM THE MODAL
   const handleClassId = classId => {
     setClassIdChose(classId);
   };
 
-  //TAKE THE CLASS NAME SENT BACK FROM THE MODAL
   const handleClassName = className => {
     setClassNameChose(className);
   };
-
-  //NAVIGATE TO STUDENTS LIST
   const handleGetStudent = () => {
-    Alert.alert('Save Warning', 'Do you want to save this information ?', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel'),
-      },
-      {
-        text: 'OK',
-        onPress: () => {
-          if (classIdChose === '') {
-            Alert.alert(
-              'Missing some fields',
-              "You haven't selected your class/club. \n Please disconnect from the current device and choose your class/club first",
-            );
-          } else {
-            //CONVERT TO
-            timeToNumber = parseInt(time).toFixed(2);
-            stepToNumber = parseInt(steps).toFixed(2);
-            caloriesToNumber = parseFloat(calories).toFixed(2);
-            accelToNumber = parseFloat(acceleration).toFixed(2);
-            distanceToNumber = parseFloat(distance).toFixed(2);
-            jumpToNumber = parseInt(jumps).toFixed(2);
-            runAVGToNumber = parseFloat(run_avg).toFixed(2);
-            runMAXToNumber = parseFloat(run_max).toFixed(2);
-
-            console.log(
-              'SEND' + classIdChose,
-              timeToNumber,
-              stepToNumber,
-              caloriesToNumber,
-              accelToNumber,
-              distanceToNumber,
-              jumpToNumber,
-              runAVGToNumber,
-              runMAXToNumber,
-            );
-
-            disconnectFromDevice();
-            //NAVIGATE
-            navigation.navigate('Student', {
-              classIdChose,
-              timeToNumber,
-              stepToNumber,
-              caloriesToNumber,
-              accelToNumber,
-              distanceToNumber,
-              jumpToNumber,
-              runAVGToNumber,
-              runMAXToNumber,
-            });
-          }
-        },
-      },
-    ]);
+    if (classIdChose === '') {
+      Alert.alert(
+        'Missing some fields',
+        "You haven't selected your class/club. \n Disconnect from the current device and choose your class/club first",
+      );
+    } else {
+      disconnectFromDevice();
+      navigation.navigate('Student', {
+        classIdChose,
+        time,
+        steps,
+        calories,
+        acceleration,
+        distance,
+        jumps,
+        run_avg,
+        run_max,
+      });
+    }
   };
 
   return (
@@ -731,52 +678,33 @@ const BLE = ({
                       </View>
                     </View>
                   </View>
-                  {/* BUTTON GROUPS */}
+                  {/* BUTTON */}
                   <View style={styles.button__group}>
-                    {/* UPLOAD */}
                     <TouchableOpacity
-                      style={[
-                        styles.button__container,
-                        styles.widther,
-                        styles.upload,
-                      ]}
+                      style={[styles.button__save_container]}
                       onPress={handleGetStudent}>
-                      <Icon
-                        name="backup"
-                        style={[
-                          styles.button__icon,
-                          styles.button__icon_upload,
-                        ]}
-                      />
+                      <Text style={[styles.save__title]}>save information</Text>
                     </TouchableOpacity>
-                    {/* CLEAR */}
+                  </View>
+                  {/* BUTTONS */}
+                  <View style={styles.button__group}>
                     <TouchableOpacity
-                      style={[
-                        styles.button__container,
-                        styles.clear,
-                        styles.smaller,
-                      ]}
+                      style={[styles.button__container, styles.clear]}
                       onPress={handleClearData}>
-                      <Icon
-                        name="cleaning-services"
-                        style={[styles.button__icon, styles.button__icon_clear]}
-                      />
+                      <Text style={[styles.button__title, styles.clear__title]}>
+                        clear data
+                      </Text>
                     </TouchableOpacity>
-                    {/* DISCONNECT */}
                     <TouchableOpacity
-                      style={[
-                        styles.button__container,
-                        styles.disconnect,
-                        styles.smaller,
-                      ]}
+                      style={[styles.button__container, styles.disconnect]}
                       onPress={handleDisconnect}>
-                      <Icon
-                        name="logout"
+                      <Text
                         style={[
-                          styles.button__icon,
-                          styles.button__icon_disconnect,
-                        ]}
-                      />
+                          styles.button__title,
+                          styles.disconnect__title,
+                        ]}>
+                        disconnect
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -967,17 +895,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingHorizontal: res * 0.02,
-    paddingVertical: res * 0.02,
+    paddingVertical: res * 0.01,
     borderRadius: res * 0.02,
   },
   welcome__btn: {
     alignItems: 'center',
-    gap: res * 0.01,
+    gap: res * 0.02,
   },
   side__box: {
-    width: res * 0.06,
-    height: res * 0.06,
-    borderRadius: (res * 0.06) / 2,
+    width: res * 0.05,
+    height: res * 0.05,
+    borderRadius: (res * 0.05) / 2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFF',
@@ -988,7 +916,7 @@ const styles = StyleSheet.create({
   },
   side__text: {
     fontSize: res * 0.015,
-    fontWeight: '900',
+    fontWeight: '600',
     color: '#FFF',
   },
   main__box: {
@@ -1026,6 +954,7 @@ const styles = StyleSheet.create({
   header__text: {
     fontSize: Platform.OS == 'android' ? res * 0.03 : res * 0.04,
     fontWeight: '900',
+    // color: '#4CAF50',
     color: '#4CAF50',
   },
   device__id: {
@@ -1095,6 +1024,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.6,
     shadowRadius: 5.68,
     elevation: 12,
+  },
+  spotlight: {
+    // backgroundColor: '#B7B7B7',
+    // shadowColor: '#EADBC8',
   },
   item__head: {
     flexDirection: 'row',
@@ -1294,54 +1227,52 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: '#616161',
   },
+  button__group: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: res * 0.03,
+  },
+  button__container: {
+    width: '46%',
+    paddingVertical: res * 0.03,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  button__save_container: {
+    width: '100%',
+    paddingVertical: res * 0.03,
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#4CAF50',
+  },
+  save__title: {
+    textTransform: 'uppercase',
+    fontSize: res * 0.02,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  clear: {
+    backgroundColor: '#FFF',
+  },
+  disconnect: {
+    backgroundColor: '#15212D',
+  },
+  button__title: {
+    textTransform: 'uppercase',
+    fontSize: res * 0.02,
+    fontWeight: '600',
+  },
+  clear__title: {
+    color: '#4CAF50',
+  },
+  disconnect__title: {
+    color: '#FFF',
+  },
   loadingAnimation: {
     width: 0,
     height: res * 0.01,
     backgroundColor: '#FFF',
-  },
-  button__group: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: res * 0.05,
-    padding: res * 0.02,
-    borderRadius: res * 0.02,
-  },
-  button__container: {
-    height: res * 0.06,
-    borderRadius: res * 0.01,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  widther: {
-    width: '60%',
-  },
-  smaller: {
-    width: '15%',
-  },
-  button__icon: {
-    color: '#FFF',
-  },
-  upload: {
-    backgroundColor: '#FFF',
-  },
-  clear: {
-    backgroundColor: '#4CAF50',
-  },
-  disconnect: {
-    backgroundColor: '#C63D2F',
-  },
-  button__icon_upload: {
-    color: '#4CAF50',
-    fontSize: res * 0.04,
-  },
-  button__icon_clear: {
-    fontSize: res * 0.03,
-  },
-  button__icon_disconnect: {
-    fontSize: res * 0.03,
   },
 });
 

@@ -18,34 +18,32 @@ const res = Dimensions.get('window').height;
 export default function GetStudents({route, navigation}) {
   const {
     classIdChose,
-    timeToNumber,
-    stepToNumber,
-    caloriesToNumber,
-    accelToNumber,
-    distanceToNumber,
-    jumpToNumber,
-    runAVGToNumber,
-    runMAXToNumber,
+    time,
+    steps,
+    calories,
+    acceleration,
+    distance,
+    jumps,
+    run_avg,
+    run_max,
   } = route.params;
   const [studentValue, setStudentValue] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  //CONVERT TO
+  timeToNumber = parseInt(time).toFixed(2);
+  stepToNumber = parseInt(steps).toFixed(2);
+  caloriesToNumber = parseFloat(calories).toFixed(2);
+  accelToNumber = parseFloat(acceleration).toFixed(2);
+  distanceToNumber = parseFloat(distance).toFixed(2);
+  jumpToNumber = parseInt(jumps).toFixed(2);
+  runAVGToNumber = parseFloat(run_avg).toFixed(2);
+  runMAXToNumber = parseFloat(run_max).toFixed(2);
+
   console.log(
     classIdChose,
-    timeToNumber,
     stepToNumber,
-    caloriesToNumber,
-    accelToNumber,
-    distanceToNumber,
-    jumpToNumber,
-    runAVGToNumber,
-    runMAXToNumber,
-  );
-  console.log(
-    'RECEIVED' + classIdChose,
-    timeToNumber,
-    stepToNumber,
-    caloriesToNumber,
+    calories,
     accelToNumber,
     distanceToNumber,
     jumpToNumber,

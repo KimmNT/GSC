@@ -11,7 +11,6 @@ import TakePicture from '../screens/GROUPING/TakePicture';
 import GetClasses from '../screens/SUBMIT/GetClasses';
 import GetStudents from '../screens/SUBMIT/GetStudents';
 import SubmitDone from '../screens/SUBMIT/SubmitDone';
-import TakeStudents from '../screens/GROUPING/TakeStudents';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,7 +25,7 @@ export default function Router() {
         <Stack.Screen name="Success" component={Success} />
         <Stack.Screen name="GroupDevice" component={GroupDevice} />
         <Stack.Screen name="TakeQRCode" component={TakeQRCode} />
-        <Stack.Screen name="TakeStudent" component={TakeStudents} />
+        <Stack.Screen name="TakePicture" component={TakePicture} />
         <Stack.Screen name="Classes" component={GetClasses} />
         <Stack.Screen name="Student" component={GetStudents} />
         <Stack.Screen name="SubmitDone" component={SubmitDone} />
