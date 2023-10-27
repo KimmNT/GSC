@@ -1,57 +1,42 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
-  Text,
+  TouchableOpacity,
+  Image,
   StyleSheet,
   Dimensions,
-  ScrollView,
-  TouchableOpacity,
   TextInput,
-  Image,
+  Text,
+  ScrollView,
   Alert,
 } from 'react-native';
-import axios from 'axios';
-import NonAvatar from '../../../assets/images/emptyAvatar.png';
+import {useDeviceInfo} from './DeviceInfoContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import NonAvatar from '../../../assets/images/emptyAvatar.png';
+import axios from 'axios';
+
 const res = Dimensions.get('window').height;
 
-export default function GetStudents({route, navigation}) {
-  const {
-    classIdChose,
-    timeToNumber,
-    stepToNumber,
-    caloriesToNumber,
-    accelToNumber,
-    distanceToNumber,
-    jumpToNumber,
-    runAVGToNumber,
-    runMAXToNumber,
-  } = route.params;
+export default function TakeStudents({navigation, route}) {
+  const {qrcode, classIdChose} = route.params;
   const [studentValue, setStudentValue] = useState([]);
+  const [chosenStudentInfor, setChosenStudentInfor] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [idPassed, setIdPassed] = useState(false);
+  const [deviceInfor, setDeviceInfor] = useState({
+    qrcode: route.params.qrcode,
+    classId: route.params.classIdChose,
+    steps: 0,
+    time: 0,
+    distance: 0,
+    calories: 0,
+    speed_avg: 0,
+    speed_max: 0,
+    flex: 0,
+    jump: 0,
+  });
 
-  console.log(
-    classIdChose,
-    timeToNumber,
-    stepToNumber,
-    caloriesToNumber,
-    accelToNumber,
-    distanceToNumber,
-    jumpToNumber,
-    runAVGToNumber,
-    runMAXToNumber,
-  );
-  console.log(
-    'RECEIVED' + classIdChose,
-    timeToNumber,
-    stepToNumber,
-    caloriesToNumber,
-    accelToNumber,
-    distanceToNumber,
-    jumpToNumber,
-    runAVGToNumber,
-    runMAXToNumber,
-  );
+  const {addDeviceInfo} = useDeviceInfo();
 
   //SEARCH BOX
   const handleSearch = query => {
@@ -81,59 +66,36 @@ export default function GetStudents({route, navigation}) {
     fetchData();
   }, []);
 
-  //SAVE STUDENT INFORMATION
-  const handleSaveStudentInformation = (studentID, studentName) => {
-    Alert.alert(
-      'Save information!',
-      `Do you want to save information of ${studentName} ?`,
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log(`NOPE!`),
-        },
-        {
-          text: 'OK',
-          onPress: async () => {
-            const url =
-              'http://api-gibbon-genio.dev.ncs.int/api/postStudentHealthForIoT';
-            const apiKey = '251cb836e62cd90f35de2a2fe570133e643a182b';
-
-            const currentDate = new Date();
-
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const day = String(currentDate.getDate()).padStart(2, '0');
-
-            const formattedDate = `${year}-${month}-${day}`;
-
-            const data = {
-              gibbonStudentID: studentID,
-              gibbonClassID: classIdChose,
-              time: timeToNumber,
-              step: stepToNumber,
-              calories: caloriesToNumber,
-              flexibitity: accelToNumber,
-              distance: distanceToNumber,
-              jump: jumpToNumber,
-              speed_average: runAVGToNumber,
-              speed_max: runMAXToNumber,
-              date: formattedDate,
-            };
-            const headers = {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-            };
-            console.log(data);
-            const res = await axios.post(url, data, {headers});
-            console.log(res.data);
-            res.data.status
-              ? navigation.navigate('SubmitDone')
-              : console.log('Something went wrong!');
-          },
-        },
-      ],
-    );
+  // HANDLE MAP STUDENT
+  const handleMapStudent = (stuID, stuAva) => {
+    setChosenStudentInfor(prevChosenStudentInfor => ({
+      ...prevChosenStudentInfor,
+      studentId: stuID,
+      studentAva: stuAva,
+      qrcode: qrcode,
+    }));
+    setIdPassed(true);
+    // Optionally, you can also store the data in your deviceInfoArray
+    const newDeviceInfo = {
+      qrcode: qrcode,
+      classId: classIdChose,
+      steps: 0,
+      time: 0,
+      distance: 0,
+      calories: 0,
+      speed_avg: 0,
+      speed_max: 0,
+      flex: 0,
+      jump: 0,
+    };
+    addDeviceInfo(newDeviceInfo);
   };
+
+  if (idPassed) {
+    navigation.navigate('GroupDevice', {
+      studentInfor: chosenStudentInfor,
+    });
+  }
 
   return (
     <View style={styles.student__container}>
@@ -150,13 +112,10 @@ export default function GetStudents({route, navigation}) {
       </View>
       <ScrollView>
         <View style={styles.student__list}>
-          {filtered.map(student => (
+          {studentValue.map(student => (
             <TouchableOpacity
               onPress={() =>
-                handleSaveStudentInformation(
-                  student.gibbonStudentID,
-                  student.name,
-                )
+                handleMapStudent(student.gibbonStudentID, student.avatar)
               }
               style={[styles.student__item, styles.shadow]}
               key={student.gibbonStudentID}>

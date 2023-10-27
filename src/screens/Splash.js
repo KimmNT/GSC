@@ -54,7 +54,7 @@ const SplashScreen = ({navigation}) => {
           source={ball}
           style={[styles.ball, {transform: [{translateX: ballMove}]}]}
         />
-        <Text style={styles.app__version}>version 1.0.7</Text>
+        <Text style={styles.app__version}>version 1.0.8</Text>
       </View>
     </View>
   );

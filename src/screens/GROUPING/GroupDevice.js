@@ -16,10 +16,14 @@ import BackArrow from '../components/BackArrow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useDeviceInfo} from './DeviceInfoContext';
 import {useFocusEffect} from '@react-navigation/native';
+import GetClassesModel from '../components/GetClassesModel';
+import NonAvatar from '../../../assets/images/emptyAvatar.png';
 
 const res = Dimensions.get('window').height;
 
 export default function GroupDevice({navigation, route}) {
+  const {chosenStudentId, chosenStudentAva, studentInfor} = route.params || {};
+
   const {
     requestPermissions,
     scanForDevices,
@@ -32,23 +36,40 @@ export default function GroupDevice({navigation, route}) {
 
   const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
     useDeviceInfo();
+
+  //STATE HANDLE GETQR FROM QRARRAY
   const [getQR, setGetQR] = useState('');
+  // STATE HANDLE UPDATE COMPONENT
   const [update, setUpdate] = useState(false);
+  //STATE HANDLE ADD EACH QR INTO AN ARRAY
   const [qrArray, setQRArray] = useState([]);
-  const [imgArray, setImgArray] = useState([]);
+  //STATE HANDLE ADD EACH IMAGE INTO AN ARRAY
+  const [studentInforArray, setStudentInforArray] = useState([]);
+  //STATE HANDLE RUNNING STATUS
   const [isRunning, setIsRunning] = useState(false);
+  //STATE HANDLE DONE STATUS
   const [isDone, setIsDone] = useState(true);
+  //STATE HANDLE GETCLASS MODAL VISIBILITY
+  const [isGetClassVisibal, setGetClassVisible] = useState(false);
+  //STATE HANDLE CLASSID SENT BACK FROM MODAL
+  const [classIdChose, setClassIdChose] = useState('');
+  //STATE HANDLE CLASSNAME SENT BACK FROM MODAL
+  const [classNameChose, setClassNameChose] = useState(
+    'Choose your class/club',
+  );
 
   //HANDLE SPLIT DATA
   const dataSplited = data.split('|');
   id = parseInt([dataSplited[0]]);
   interval = parseInt([dataSplited[1]]);
-  dataTime = Math.round((id * (interval / 1000)) / 60);
-  dataSteps = parseInt([dataSplited[2]]);
-  dataFlex = parseFloat([dataSplited[5]]);
-  dataRun = parseFloat(([dataSplited[8]] * 3.6).toFixed(1));
-  dataCalories = Math.round(dataSteps * 0.03);
+  dataTime = parseInt(Math.round((id * (interval / 1000)) / 60)).toFixed(2);
+  dataSteps = parseInt([dataSplited[2]]).toFixed(2);
+  dataFlex = parseFloat([dataSplited[5]]).toFixed(2);
+  dataRun = parseFloat(([dataSplited[9]] * 3.6).toFixed(2));
+  dataRunMAX = parseFloat(([dataSplited[10]] * 3.6).toFixed(2));
+  dataCalories = parseFloat(Math.round(dataSteps * 0.03)).toFixed(2);
   dataDistance = parseFloat((Math.floor(dataSteps * 0.2) / 1000).toFixed(2));
+  dataJump = parseFloat([dataSplited[6]]).toFixed(2);
 
   //HANDLE PUSH QRCODE VALUE INTO NEW ARRAY
   useEffect(() => {
@@ -59,18 +80,30 @@ export default function GroupDevice({navigation, route}) {
     return () => clearInterval(qrInterval);
   }, [qrArray]);
 
-  //HANDLE PUSH IMAGE URI VALUE INTO NEW ARRAY
-  useFocusEffect(
-    useCallback(() => {
-      const newImg = route.params?.capturedImage;
-      if (newImg) {
-        setImgArray([...imgArray, newImg]);
-      }
-    }, [route.params?.capturedImage]),
-  );
+  //HANDLE PUSH STUDENT INFORMATION INTO NEW ARRAY
+  useEffect(() => {
+    if (studentInfor) {
+      // Create a new array to store the selected student IDs
+      setStudentInforArray(preStudentInforArray => [
+        ...preStudentInforArray,
+        studentInfor,
+      ]);
+    }
+  }, [studentInfor]);
+
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 4000 * qrArray.length + 4000;
-  //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
+  const qrArrayTotalTimeRun = 4000 * qrArray.length + 2000;
+  //each device need A(s) to run * quantity of devices + add more B(s)to make sure the latest data will be taken
+
+  //HIDE MODAL GET CLASSES
+  const hideGetClass = () => {
+    setGetClassVisible(false);
+  };
+
+  //OPEN GetClassModel
+  const openGetClassModel = () => {
+    setGetClassVisible(true);
+  };
 
   //HANDLE SEND TO RX
   useEffect(() => {
@@ -120,12 +153,18 @@ export default function GroupDevice({navigation, route}) {
   };
   //NAVIGATE TO  QRCODE
   const navigateToQRCode = () => {
-    requestPermissions(isGranted => {
-      if (isGranted) {
-        scanForDevices();
-        navigation.navigate('TakeQRCode');
-      }
-    });
+    if (classIdChose.toString().length > 0) {
+      requestPermissions(isGranted => {
+        if (isGranted) {
+          scanForDevices();
+          navigation.navigate('TakeQRCode', {classIdChose});
+        }
+      });
+    } else
+      Alert.alert(
+        'Missing some fields',
+        "You haven't selected your class/club. \n Please choose your class/club before matching devices",
+      );
   };
   //CLEAR DEVICES LIST
   const handleClearGroup = () => {
@@ -137,8 +176,11 @@ export default function GroupDevice({navigation, route}) {
       {
         text: 'OK',
         onPress: () => {
-          clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
-          setGetQR(''), disconnectFromDevice();
+          clearDeviceInfoArray(),
+            setQRArray([]),
+            setGetQR(''),
+            setStudentInforArray([]),
+            disconnectFromDevice();
         },
       },
     ]);
@@ -152,13 +194,15 @@ export default function GroupDevice({navigation, route}) {
     // Create a new device info object with the entered values
     const newDeviceInfo = {
       qrcode: getQR,
+      classId: classIdChose,
       steps: dataSteps,
       time: dataTime,
       distance: dataDistance,
       calories: dataCalories,
-      speed: dataRun,
+      speed_avg: dataRun,
+      speed_max: dataRunMAX,
       flex: dataFlex,
-      rank: (dataDistance + dataCalories + dataRun + dataFlex) / dataTime,
+      jump: dataJump,
     };
     if (existingIndex !== -1) {
       // If an object with the same "qrcode" exists, update it
@@ -184,16 +228,36 @@ export default function GroupDevice({navigation, route}) {
     }
   }, [isRunning]);
 
+  //TAKE THE CLASS ID SENT BACK FROM THE MODAL
+  const handleClassId = classId => {
+    setClassIdChose(classId);
+  };
+
+  //TAKE THE CLASS NAME SENT BACK FROM THE MODAL
+  const handleClassName = className => {
+    setClassNameChose(className);
+  };
+
+  // console.log(studentInforArray);
+  // console.log(deviceInfoArray);
+
   return (
     <View style={styles.group__container}>
+      {/* HEADER */}
       <View style={styles.group__headline}>
-        {/* HEADER */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.group__quit}>
           <BackArrow />
         </TouchableOpacity>
-        <Text style={styles.group__text}>group devices</Text>
+        <View>
+          <Text style={styles.group__text}>group devices</Text>
+          <TouchableOpacity
+            style={styles.group__class_btn}
+            onPress={openGetClassModel}>
+            <Text style={styles.group__class_text}>{classNameChose}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
@@ -278,82 +342,94 @@ export default function GroupDevice({navigation, route}) {
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
         {/* DEBUG THE DATA */}
-        {/* <Text
+        {/* <View
           style={{
-            flex: 1,
+            width: '100%',
+            backgroundColor: '#000',
             justifyContent: 'center',
             alignItems: 'center',
-            color: '#000',
-            width: '100%',
+            marginBottom: res * 0.05,
+            padding: res * 0.01,
           }}>
-          {data}
-        </Text> */}
+          <Text
+            style={{
+              color: '#4CAF50',
+              alignItems: 'center',
+            }}>
+            {data}
+          </Text>
+        </View> */}
         <View style={styles.group__content}>
-          <View style={styles.group__item_imagelist}>
-            {imgArray.map((img, index) => (
-              <View style={styles.group__item_imagelist_item}>
-                <View style={[styles.group__item_image_layer, styles.shadow]}>
-                  <Image
-                    key={index}
-                    source={{uri: img}}
-                    style={styles.group__item_image}
-                  />
-                </View>
-              </View>
-            ))}
-          </View>
           <View style={styles.group__item_information}>
-            {deviceInfoArray.map((device, index) => (
-              <View style={[styles.group__item, styles.shadow]} key={index}>
-                {/* STATS */}
-                <View style={styles.group__item_stat}>
-                  {/* STEPS */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="run-circle"
-                      style={[styles.stat__icon, styles.step]}
+            <View style={[styles.group__item, styles.shadow]}>
+              <View style={styles.item__info}>
+                {studentInforArray.map((student, index) => (
+                  <View style={styles.item__info_content} key={index}>
+                    <Image
+                      style={styles.item__image}
+                      source={{uri: student.studentAva}}
                     />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.steps}</Text>
-                      <Text style={styles.stat__unit}>steps</Text>
-                    </View>
+                    <Text style={styles.item__qrcode}>
+                      {student.qrcode.substring(9, 14)}
+                    </Text>
                   </View>
-                  {/* TIME */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="schedule"
-                      style={[styles.stat__icon, styles.time]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.time}</Text>
-                      <Text style={styles.stat__unit}>time</Text>
-                    </View>
-                  </View>
-                  {/* CALORIES */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="local-fire-department"
-                      style={[styles.stat__icon, styles.calories]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.calories}</Text>
-                      <Text style={styles.stat__unit}>kcal</Text>
-                    </View>
-                  </View>
-                  {/* DISTANCE */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="directions-walk"
-                      style={[styles.stat__icon, styles.distance]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.distance}</Text>
-                      <Text style={styles.stat__unit}>km</Text>
-                    </View>
-                  </View>
-                </View>
+                ))}
               </View>
-            ))}
+              <View style={styles.item__stats}>
+                {deviceInfoArray.map((device, index) => (
+                  <View style={styles.item__stats_content} key={index}>
+                    {/* STEPS */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="run-circle"
+                        style={[styles.stat__icon, styles.step]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>{device.steps}</Text>
+                        <Text style={styles.stat__unit}>steps</Text>
+                      </View>
+                    </View>
+                    {/* TIME */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="schedule"
+                        style={[styles.stat__icon, styles.time]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>{device.time}</Text>
+                        <Text style={styles.stat__unit}>time</Text>
+                      </View>
+                    </View>
+                    {/* CALORIES */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="local-fire-department"
+                        style={[styles.stat__icon, styles.calories]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>
+                          {device.calories}
+                        </Text>
+                        <Text style={styles.stat__unit}>kcal</Text>
+                      </View>
+                    </View>
+                    {/* DISTANCE */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="directions-walk"
+                        style={[styles.stat__icon, styles.distance]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>
+                          {device.distance}
+                        </Text>
+                        <Text style={styles.stat__unit}>km</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -377,6 +453,12 @@ export default function GroupDevice({navigation, route}) {
         contentContainerStyle={styles.modalFlatlistContiner}
         data={allDevices}
         renderItem={renderDeviceModalListItem}
+      />
+      <GetClassesModel
+        closeModal={hideGetClass}
+        visible={isGetClassVisibal}
+        sendClassId={handleClassId}
+        sendClassName={handleClassName}
       />
     </View>
   );
@@ -402,6 +484,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: '#000',
     fontWeight: '900',
+  },
+  group__class_btn: {
+    // width: '100%',
+    alignItems: 'flex-end',
+    marginTop: res * 0.02,
+  },
+  group__class_text: {
+    color: '#4CAF50',
+    fontWeight: '600',
+    backgroundColor: '#FFF',
+    paddingHorizontal: res * 0.009,
+    paddingVertical: res * 0.01,
   },
   group__controller: {
     marginVertical: res * 0.03,
@@ -473,70 +567,70 @@ const styles = StyleSheet.create({
     shadowRadius: 5.68,
     elevation: 12,
   },
-  group__item_imagelist: {
-    width: '30%',
-    gap: 20,
-  },
-  group__item_imagelist_item: {
-    width: '100%',
-    height: res * 0.15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  group__item_image_layer: {
-    width: res * 0.12,
-    height: res * 0.12,
-    borderRadius: (res * 0.12) / 2,
-    backgroundColor: '#FFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   group__item_information: {
-    width: '65%',
+    width: '100%',
     gap: 20,
   },
   group__item: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    // alignItems: 'center',
     width: '100%',
-    height: res * 0.15,
+    borderRadius: res * 0.01,
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.02,
+  },
+  item__info: {
+    width: '35%',
+    flexDirection: 'column',
+  },
+  item__stats: {
+    width: '65%',
+    flexDirection: 'column',
+  },
+  item__info_content: {
+    height: res * 0.2,
+    marginBottom: res * 0.01,
     backgroundColor: '#FFF',
-    borderRadius: 10,
-  },
-  group__item_image: {
-    width: res * 0.1,
-    height: res * 0.1,
-    resizeMode: 'cover',
-    borderRadius: (res * 0.1) / 2,
-  },
-  group__item_qrcode_container: {
-    backgroundColor: '#000',
-    marginTop: res * 0.01,
-    width: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
-    paddingVertical: res * 0.005,
+    borderTopLeftRadius: res * 0.02,
+    borderBottomLeftRadius: res * 0.02,
   },
-  group__item_qrcode: {
-    fontSize: res * 0.02,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  group__item_stat: {
-    width: '100%',
+  item__stats_content: {
+    height: res * 0.2,
+    marginBottom: res * 0.01,
+    backgroundColor: '#FFF',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignContent: 'stretch',
     flexWrap: 'wrap',
-    paddingHorizontal: res * 0.01,
+    justifyContent: 'center',
+    alignContent: 'center',
+    borderTopRightRadius: res * 0.02,
+    borderBottomRightRadius: res * 0.02,
+  },
+  item__image: {
+    width: res * 0.12,
+    height: res * 0.12,
+    resizeMode: 'cover',
+    borderRadius: (res * 0.12) / 2,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  item__qrcode: {
+    marginTop: res * 0.02,
+    backgroundColor: '#000',
+    color: '#FFF',
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.007,
   },
   stat__info: {
-    width: '40%',
-    flexDirection: 'row',
+    width: '48%',
     alignItems: 'center',
+    flexDirection: 'row',
+    padding: res * 0.01,
   },
   stat__icon: {
-    fontSize: res * 0.025,
+    fontSize: res * 0.03,
     marginRight: res * 0.01,
   },
   step: {
@@ -561,7 +655,7 @@ const styles = StyleSheet.create({
   },
   stat__unit: {
     color: '#000',
-    fontSize: res * 0.015,
+    fontSize: res * 0.02,
   },
   group__add_container: {
     position: 'absolute',

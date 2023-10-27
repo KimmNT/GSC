@@ -7,24 +7,27 @@ import {
   Dimensions,
   TextInput,
 } from 'react-native';
-import {RNCamera} from 'react-native-camera';
 import {useDeviceInfo} from './DeviceInfoContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const res = Dimensions.get('window').height;
 
 function CameraScreen({navigation, route}) {
-  const {qrcode} = route.params;
+  const {qrcode, classIdChose} = route.params;
   const cameraRef = useRef(null);
-  const [capturedImage, setCapturedImage] = useState(null);
+  // const [capturedImage, setCapturedImage] = useState(null);
+  const [studentId, setStudentId] = useState(0);
   const [deviceInfor, setDeviceInfor] = useState({
     qrcode: route.params.qrcode,
-    capturedImage: null,
+    classId: route.params.classIdChose,
+    studentId: 0,
+    avatar: '',
     steps: 0,
     time: 0,
     distance: 0,
     calories: 0,
-    speed: 0,
+    speed_avg: 0,
+    speed_max: 0,
     flex: 0,
     rank: 0,
   });
@@ -46,67 +49,24 @@ function CameraScreen({navigation, route}) {
       }));
     }
   };
-  const retakePicture = () => {
-    setCapturedImage(null);
-  };
   const navigateToGroup = () => {
     addDeviceInfo(deviceInfor);
     navigation.navigate('GroupDevice', {capturedImage});
   };
 
   return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      {capturedImage ? (
-        <View style={{flex: 1, width: '100%', position: 'relative'}}>
-          <Image
-            source={{uri: capturedImage}}
-            style={{flex: 1, width: '100%'}}
-          />
-          <View style={styles.controller}>
-            <TouchableOpacity
-              onPress={retakePicture}
-              style={[
-                styles.controller__btn,
-                styles.controller__btn_retake,
-                styles.shadow,
-              ]}>
-              <Icon
-                name="autorenew"
-                style={[styles.controll__icon, styles.controll__icon_retake]}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={navigateToGroup}
-              style={[
-                styles.controller__btn,
-                styles.controller__btn_navigate,
-                styles.shadow,
-              ]}>
-              <Icon
-                name="done"
-                style={[styles.controll__icon, styles.controll__icon_navigate]}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <RNCamera
-          ref={cameraRef}
-          style={{flex: 1, width: '100%'}}
-          type={RNCamera.Constants.Type.back}
-        />
-      )}
-      {!capturedImage && (
-        <View style={styles.take__circle_container}>
-          <View style={styles.take__circle}></View>
-        </View>
-      )}
-      {!capturedImage && (
-        <TouchableOpacity onPress={takePicture} style={styles.take__btn}>
-          <View style={styles.take__btn_inside}></View>
-        </TouchableOpacity>
-      )}
-    </View>
+    <TouchableOpacity
+      onPress={navigateToGroup}
+      style={[
+        styles.controller__btn,
+        styles.controller__btn_navigate,
+        styles.shadow,
+      ]}>
+      <Icon
+        name="done"
+        style={[styles.controll__icon, styles.controll__icon_navigate]}
+      />
+    </TouchableOpacity>
   );
 }
 
