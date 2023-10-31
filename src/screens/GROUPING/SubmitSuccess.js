@@ -21,7 +21,7 @@ export default function SubmitSuccess({navigation}) {
   const handleBackToScan = () => {
     clearDeviceInfoArray();
     clearStudentInfoArray();
-    navigation.navigate('GroupDevice');
+    navigation.navigate('BLE');
   };
 
   return (
@@ -34,7 +34,7 @@ export default function SubmitSuccess({navigation}) {
         <TouchableOpacity
           onPress={handleBackToScan}
           style={styles.success__scan_again}>
-          <Text style={styles.success__scan_again_text}>save again</Text>
+          <Text style={styles.success__scan_again_text}>done</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -2,7 +2,6 @@
 import {useState} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
-
 import {atob, btoa} from 'react-native-quick-base64';
 import {useDeviceInfo} from './src/ReactContexts/DeviceInfoContext';
 

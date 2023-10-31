@@ -7,8 +7,11 @@ const StudentInfoContext = createContext();
 export const StudentInfoProvider = ({children}) => {
   const [studentInfoArray, setStudentInfoArray] = useState([]);
 
-  const addStudentInfo = (qrcode, stuId, stuAva) => {
-    setStudentInfoArray([...studentInfoArray, {qrcode, stuId, stuAva}]);
+  const addStudentInfo = (qrcode, stuId, stuAva, stuName) => {
+    setStudentInfoArray([
+      ...studentInfoArray,
+      {qrcode, stuId, stuAva, stuName},
+    ]);
   };
 
   const clearStudentInfoArray = () => {

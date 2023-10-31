@@ -12,6 +12,7 @@ import React, {useState} from 'react';
 import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
 import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
 import BackArrow from '../components/BackArrow';
+import NonAva from '../../../assets/images/emptyAvatar.png';
 import axios from 'axios';
 
 const res = Dimensions.get('window').height;
@@ -34,7 +35,7 @@ export default function Submiting({navigation}) {
   }));
   //FINISH COMBINE
 
-  const url = 'http://api-gibbon-genio.dev.ncs.int/api/postStudentHealthForIoT';
+  const url = 'https://api.qlhv.geniofut.com/api/postStudentHealthForIoT';
   const apiKey = '251cb836e62cd90f35de2a2fe570133e643a182b';
 
   const handlePushToServer = () => {
@@ -90,13 +91,22 @@ export default function Submiting({navigation}) {
         <View style={styles.submit__list}>
           {merchArray.map(item => (
             <View style={styles.submit__item}>
-              <Image
-                source={{uri: item.stuAva}}
-                style={styles.submit__item_img}
-              />
-              <Text style={styles.submit__item_qrcode}>
-                {item.qrcode.substring(9, 15)}
-              </Text>
+              <View style={styles.submit__item_container}>
+                {item.stuAva === '' ? (
+                  <Image source={NonAva} style={styles.submit__item_img} />
+                ) : (
+                  <Image
+                    source={{uri: item.stuAva}}
+                    style={styles.submit__item_img}
+                  />
+                )}
+                <Text style={styles.submit__item_qrcode}>
+                  {item.qrcode.substring(9, 15)}
+                </Text>
+              </View>
+              <View style={styles.submit__item_name}>
+                <Text style={styles.name}>{item.stuName}</Text>
+              </View>
             </View>
           ))}
         </View>
@@ -143,12 +153,14 @@ const styles = StyleSheet.create({
   submit__item: {
     width: '48%',
     backgroundColor: '#FFF',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.02,
     borderRadius: res * 0.015,
+  },
+  submit__item_container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   submit__item_img: {
     width: res * 0.1,
@@ -160,6 +172,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     color: '#FFF',
     padding: res * 0.005,
+  },
+  submit__item_name: {
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    paddingVertical: res * 0.01,
+    marginTop: res * 0.02,
+    borderRadius: res * 0.01,
+    borderWidth: 1,
+    borderColor: '#000',
+  },
+  name: {
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
   },
   submit__btn: {
     position: 'absolute',

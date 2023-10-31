@@ -154,7 +154,7 @@ const BLE = ({
   });
 
   const handleDisconnect = () => {
-    Alert.alert('Disconnect warining!', 'Do you want to disconnect ?', [
+    Alert.alert('Warining!', 'Do you want to disconnect ?', [
       {
         text: 'Cancel',
         onPress: () => console.log('Cancel disconnect'),
@@ -167,7 +167,16 @@ const BLE = ({
   };
 
   const handleClearData = () => {
-    sendDataToRXCharacteristic('delete');
+    Alert.alert('Warning!', 'Do you want to clear all data ?', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel clear data'),
+      },
+      {
+        text: 'OK',
+        onPress: () => sendDataToRXCharacteristic('delete'),
+      },
+    ]);
   };
 
   const handleClassId = classId => {
@@ -180,8 +189,8 @@ const BLE = ({
   const handleGetStudent = () => {
     if (classIdChose === '') {
       Alert.alert(
-        'Missing some fields',
-        "You haven't selected your class/club. \n Disconnect from the current device and choose your class/club first",
+        'Warning',
+        "You haven't selected your class/club. \n Please disconnect from the current device and choose your class/club first",
       );
     } else {
       disconnectFromDevice();
@@ -680,33 +689,34 @@ const BLE = ({
                       </View>
                     </View>
                   </View>
-                  {/* BUTTON */}
-                  <View style={styles.button__group}>
-                    <TouchableOpacity
-                      style={[styles.button__save_container]}
-                      onPress={handleGetStudent}>
-                      <Text style={[styles.save__title]}>save information</Text>
-                    </TouchableOpacity>
-                  </View>
                   {/* BUTTONS */}
                   <View style={styles.button__group}>
                     <TouchableOpacity
-                      style={[styles.button__container, styles.clear]}
-                      onPress={handleClearData}>
-                      <Text style={[styles.button__title, styles.clear__title]}>
-                        clear data
-                      </Text>
+                      style={[styles.button__container, styles.button__save]}
+                      onPress={handleGetStudent}>
+                      <Icon
+                        name="upload"
+                        style={[styles.button__icon, styles.save]}
+                      />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.button__container, styles.disconnect]}
+                      style={[styles.button__container, styles.button__clear]}
+                      onPress={handleClearData}>
+                      <Icon
+                        name="cleaning-services"
+                        style={[styles.button__icon, styles.clear]}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.button__container,
+                        styles.button__disconnect,
+                      ]}
                       onPress={handleDisconnect}>
-                      <Text
-                        style={[
-                          styles.button__title,
-                          styles.disconnect__title,
-                        ]}>
-                        disconnect
-                      </Text>
+                      <Icon
+                        name="logout"
+                        style={[styles.button__icon, styles.disconnect]}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1234,41 +1244,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: res * 0.03,
+    paddingHorizontal: res * 0.02,
   },
   button__container: {
-    width: '46%',
-    paddingVertical: res * 0.03,
+    paddingVertical: res * 0.02,
     alignItems: 'center',
     borderRadius: 5,
   },
-  button__save_container: {
-    width: '100%',
-    paddingVertical: res * 0.03,
-    alignItems: 'center',
-    borderRadius: 5,
-    backgroundColor: '#4CAF50',
-  },
-  save__title: {
-    textTransform: 'uppercase',
-    fontSize: res * 0.02,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  clear: {
+  button__save: {
+    width: '55%',
     backgroundColor: '#FFF',
   },
+  button__icon: {
+    fontSize: res * 0.03,
+  },
+  save: {
+    color: '#43A047',
+  },
+  button__clear: {
+    width: '20%',
+    backgroundColor: '#43A047',
+  },
+  clear: {
+    color: '#FFF',
+  },
+  button__disconnect: {
+    width: '20%',
+    backgroundColor: '#F44336',
+  },
   disconnect: {
-    backgroundColor: '#15212D',
-  },
-  button__title: {
-    textTransform: 'uppercase',
-    fontSize: res * 0.02,
-    fontWeight: '600',
-  },
-  clear__title: {
-    color: '#4CAF50',
-  },
-  disconnect__title: {
     color: '#FFF',
   },
   loadingAnimation: {

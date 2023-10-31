@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
   },
   class__item: {
     width: '48%',
-    backgroundColor: '#15212D',
+    backgroundColor: '#4CAF50',
     // alignItems: 'center',
-    padding: res * 0.01,
+    padding: res * 0.002,
     borderRadius: res * 0.01,
     justifyContent: 'center',
   },

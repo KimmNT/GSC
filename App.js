@@ -6,6 +6,7 @@ import {LogBox} from 'react-native';
 import {DeviceInfoProvider} from './src/ReactContexts/DeviceInfoContext';
 import {StudentInfoProvider} from './src/ReactContexts/StudentInfoContext';
 import WeirdCom from './src/screens/TEST/WeirdCom';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message

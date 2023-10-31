@@ -41,6 +41,7 @@ export default function TakeStudent({navigation, route}) {
     qrcode: route.params.qrcode,
     studentId: 0,
     studentAva: '',
+    studentName: '',
   });
 
   //FETCH DATA
@@ -62,8 +63,8 @@ export default function TakeStudent({navigation, route}) {
     fetchData();
   }, []);
 
-  const handleTakeStudentInfor = (stuId, stuAVa) => {
-    addStudentInfo(qrcode, stuId, stuAVa);
+  const handleTakeStudentInfor = (stuId, stuAVa, stuName) => {
+    addStudentInfo(qrcode, stuId, stuAVa, stuName);
     setPassed(true);
     addDeviceInfo(deviceInfor);
   };
@@ -80,7 +81,11 @@ export default function TakeStudent({navigation, route}) {
           {studentValue.map(student => (
             <TouchableOpacity
               onPress={() =>
-                handleTakeStudentInfor(student.gibbonStudentID, student.avatar)
+                handleTakeStudentInfor(
+                  student.gibbonStudentID,
+                  student.avatar,
+                  student.name,
+                )
               }
               style={[styles.student__item, styles.shadow]}
               key={student.gibbonStudentID}>

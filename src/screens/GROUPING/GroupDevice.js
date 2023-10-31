@@ -16,10 +16,30 @@ import BackArrow from '../components/BackArrow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
 import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
-import {useFocusEffect} from '@react-navigation/native';
 import GetClassesModel from '../components/GetClassesModel';
+import NonAva from '../../../assets/images/emptyAvatar.png';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 const res = Dimensions.get('window').height;
+
+//DELETE SWIPED STUDENT
+const rightSwipeActions = (qrcode, studentArray, deviceArray) => {
+  return (
+    <TouchableOpacity
+      onPress={() => handleDeleteStudent(qrcode, studentArray, deviceArray)}
+      style={styles.delete__item_btn}>
+      <Icon name="delete" style={styles.delete__item} />
+    </TouchableOpacity>
+  );
+};
+
+//REMOVE STUDENT AND DEVICE FROM THE ARRAY
+const handleDeleteStudent = (qrcode, studentArray, deviceArray) => {
+  const index = studentArray.findIndex(item => item.qrcode === qrcode);
+  studentArray.splice(index, 1);
+  deviceArray.splice(index, 1);
+};
 
 export default function GroupDevice({navigation, route}) {
   const {
@@ -42,6 +62,7 @@ export default function GroupDevice({navigation, route}) {
   const [imgArray, setImgArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [isDone, setIsDone] = useState(true);
+  const [isClean, setIsClean] = useState(true);
   const [isGetClassVisibal, setGetClassVisible] = useState(false);
   const [classIdChose, setClassIdChose] = useState('');
   const [classNameChose, setClassNameChose] = useState(
@@ -71,15 +92,22 @@ export default function GroupDevice({navigation, route}) {
   }, [qrArray]);
 
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 4000 * qrArray.length + 2000;
+  const qrArrayTotalTimeRun = 4000 * qrArray.length + 1000;
   //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
 
   //HANDLE SEND TO RX
   useEffect(() => {
     const sendInterval = setInterval(() => {
-      sendDataToRXCharacteristic('read');
-      handleSubmit();
-      setUpdate(!update);
+      if (isClean) {
+        sendDataToRXCharacteristic('read');
+        sendDataToRXCharacteristic('delete');
+        handleSubmit();
+        setUpdate(!update);
+      } else {
+        sendDataToRXCharacteristic('read');
+        handleSubmit();
+        setUpdate(!update);
+      }
     }, 1000);
     return () => clearInterval(sendInterval);
   }, [update]);
@@ -107,6 +135,10 @@ export default function GroupDevice({navigation, route}) {
     },
     [getQR],
   );
+  //QUIT TO HOME PAGE
+  const handleQuit = () => {
+    navigation.goBack();
+  };
   //CONNECT DEVICES FUNCTION
   const handleRefreshGroup = () => {
     qrArray.forEach((item, index) => {
@@ -115,36 +147,47 @@ export default function GroupDevice({navigation, route}) {
         setGetQR('');
         setGetQR(item);
         setIsRunning(true);
-        disconnectFromDevice();
+        // disconnectFromDevice();
         console.log(item);
       }, index * 4000);
     });
   };
   //NAVIGATE TO  QRCODE
   const navigateToQRCode = () => {
-    requestPermissions(isGranted => {
-      if (isGranted) {
-        scanForDevices();
-        navigation.navigate('TakeQRCode', {classIdChose});
-      }
-    });
+    if (classIdChose === '') {
+      Alert.alert(
+        'Warning',
+        "You haven't selected your class/club. \n Please choose your class/club before start matching devices",
+      );
+    } else {
+      requestPermissions(isGranted => {
+        if (isGranted) {
+          scanForDevices();
+          navigation.navigate('TakeQRCode', {classIdChose});
+        }
+      });
+    }
   };
   //CLEAR DEVICES LIST
-  const handleClearGroup = () => {
-    Alert.alert('Warning!', 'Do you want to clear all the devices ?', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('cancel clear'),
-      },
-      {
-        text: 'OK',
-        onPress: () => {
-          clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
-          setGetQR(''), disconnectFromDevice();
-        },
-      },
-    ]);
-  };
+  // const handleClearGroup = () => {
+  //   Alert.alert(
+  //     'Warning!',
+  //     "Do you want to clear all students's information ?",
+  //     [
+  //       {
+  //         text: 'Cancel',
+  //         onPress: () => console.log('cancel clear'),
+  //       },
+  //       {
+  //         text: 'OK',
+  //         onPress: () => {
+  //           clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
+  //           setGetQR(''), disconnectFromDevice(), clearStudentInfoArray();
+  //         },
+  //       },
+  //     ],
+  //   );
+  // };
   //SUBMIT FUNCTION
   const handleSubmit = () => {
     // Find the index of the existing object with the same "qrcode" in deviceInfoArray
@@ -169,14 +212,27 @@ export default function GroupDevice({navigation, route}) {
       deviceInfoArray[existingIndex] = newDeviceInfo;
     }
   };
-  //DISCONNECT TO SCAN DEVICES
-  const handleDisconnect = () => {
-    disconnectFromDevice();
-    setGetQR('');
-    setIsRunning(false);
-    setUpdate(!update);
-    setIsDone(true);
-  };
+  //HANDLE DISCONNECT
+  useEffect(() => {
+    if (isDone === false && isRunning === false) {
+      Alert.alert(
+        'Successfully!',
+        'All devices have been updated successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              disconnectFromDevice();
+              setGetQR('');
+              setIsRunning(false);
+              setUpdate(!update);
+              setIsDone(true);
+            },
+          },
+        ],
+      );
+    }
+  }, [isDone, isRunning]);
   //CHANGE STATE AFTER AMOUNT OF TIME
   useEffect(() => {
     if (isRunning) {
@@ -184,6 +240,7 @@ export default function GroupDevice({navigation, route}) {
         setIsRunning(false);
         setIsDone(false);
         setGetQR('');
+        setIsClean(false);
       }, qrArrayTotalTimeRun);
     }
   }, [isRunning]);
@@ -195,106 +252,141 @@ export default function GroupDevice({navigation, route}) {
   const openGetClassModel = () => {
     setGetClassVisible(true);
   };
+  //HOLD CLASS ID SENT BACK FROM CLASS MODAL
   const handleClassId = classId => {
     setClassIdChose(classId);
   };
+  //HOLD CLASS NAME SENT BACK FROM CLASS MODAL
   const handleClassName = className => {
     setClassNameChose(className);
   };
+  //HANDLE SAVE DATA
   const handleSave = () => {
-    navigation.navigate('Submitting');
+    Alert.alert('Warning', "Do you want to save students's information ?", [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel saving group'),
+      },
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('Submitting'),
+      },
+    ]);
   };
-  // console.log(studentInfoArray);
+
+  const handleClearData = () => {
+    qrArray.forEach((item, index) => {
+      setTimeout(() => {
+        disconnectFromDevice();
+        setGetQR('');
+        setGetQR(item);
+        setIsRunning(true);
+        console.log(item);
+      }, index * 4000);
+    });
+  };
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
         {/* HEADER */}
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.group__quit}>
-          <BackArrow />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.group__text}>group devices</Text>
-          <TouchableOpacity
-            onPress={openGetClassModel}
-            style={{backgroundColor: 'tomato'}}>
-            <Text style={{color: '#000'}}>{classNameChose}</Text>
+        {isRunning ? (
+          <Text></Text>
+        ) : (
+          <TouchableOpacity onPress={handleQuit} style={styles.group__quit}>
+            <BackArrow />
           </TouchableOpacity>
-        </View>
+        )}
+        <Text style={styles.group__text}>group devices</Text>
       </View>
+      <View style={styles.group__deviceCount}>
+        <Text style={styles.device__count}>{deviceInfoArray.length}/10</Text>
+        <TouchableOpacity
+          onPress={openGetClassModel}
+          style={styles.group__classes_container}>
+          <Text style={styles.group__classes}>{classNameChose}</Text>
+        </TouchableOpacity>
+      </View>
+      {/* ON READ DATA  */}
+      {isRunning ? (
+        <View style={styles.group__control_running}>
+          <Text style={styles.group__control_running_text}>
+            Smart Coach is currently updating the latest data.
+          </Text>
+          <Text style={styles.group__control_running_text}>
+            Please wait a moment!
+          </Text>
+        </View>
+      ) : (
+        <></>
+      )}
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
-        <View style={styles.group__controller}>
-          {isRunning ? (
-            <View style={styles.group__control_running}>
-              <Text style={styles.group__control_running_text}>
-                Smart Coach is currently updating the latest data.
-              </Text>
-              <Text style={styles.group__control_running_text}>
-                Please wait a moment!
-              </Text>
+        <View style={styles.group__controller_container}>
+          {isClean ? (
+            <View style={styles.group__controller}>
+              <TouchableOpacity
+                onPress={handleClearData}
+                style={[
+                  styles.group__control_btn,
+                  styles.group__clear,
+                  styles.shadow,
+                ]}>
+                <Icon
+                  name="cleaning-services"
+                  style={[
+                    styles.group__control_icon,
+                    styles.group__refresh_icon,
+                  ]}
+                />
+              </TouchableOpacity>
             </View>
           ) : (
-            <View style={{width: '100%'}}>
-              {isDone ? (
-                <View style={styles.group__control_btn_box}>
-                  <Text style={styles.device__count}>
-                    {deviceInfoArray.length}/10
-                  </Text>
-                  <View style={styles.group__controller_notruning}>
-                    <TouchableOpacity
-                      onPress={handleClearGroup}
-                      style={[
-                        styles.group__control_btn,
-                        styles.group__clear,
-                        styles.shadow,
-                      ]}>
-                      <Icon
-                        name="cleaning-services"
-                        style={[
-                          styles.group__control_icon,
-                          styles.group__clear_icon,
-                        ]}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleRefreshGroup}
-                      style={[
-                        styles.group__control_btn,
-                        styles.group__refresh,
-                        styles.shadow,
-                      ]}>
-                      <Icon
-                        name="refresh"
-                        style={[
-                          styles.group__control_icon,
-                          styles.group__refresh_icon,
-                        ]}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            <View style={styles.group__controller}>
+              {isRunning ? (
+                <></>
               ) : (
-                <View style={styles.group__control_btn_box}>
-                  <Text style={styles.device__count}>
-                    {deviceInfoArray.length}/10
-                  </Text>
-                  <TouchableOpacity
-                    onPress={handleDisconnect}
-                    style={[
-                      styles.group__control_btn,
-                      styles.group__clear,
-                      styles.shadow,
-                    ]}>
-                    <Icon
-                      name="clear"
-                      style={[
-                        styles.group__control_icon,
-                        styles.group__clear_icon,
-                      ]}
-                    />
-                  </TouchableOpacity>
+                <View
+                  style={{
+                    width: '100%',
+                  }}>
+                  {isDone ? (
+                    <View style={styles.group__control_btn_box}>
+                      <View style={styles.group__controller_notruning}>
+                        <TouchableOpacity
+                          onPress={handleRefreshGroup}
+                          style={[
+                            styles.group__control_btn,
+                            styles.group__refresh,
+                            styles.shadow,
+                          ]}>
+                          <Icon
+                            name="refresh"
+                            style={[
+                              styles.group__control_icon,
+                              styles.group__refresh_icon,
+                            ]}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={handleSave}
+                          style={[
+                            styles.group__control_btn,
+                            styles.group__save,
+                            styles.shadow,
+                          ]}>
+                          <Icon
+                            name="upload"
+                            style={[
+                              styles.group__control_icon,
+                              styles.group__save_icon,
+                            ]}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (
+                    <></>
+                  )}
                 </View>
               )}
             </View>
@@ -320,13 +412,23 @@ export default function GroupDevice({navigation, route}) {
           <View style={styles.group__item_imagelist}>
             {studentInfoArray.map((student, index) => (
               <View style={styles.group__item_imagelist_item}>
-                <View style={[styles.group__item_image_layer, styles.shadow]}>
-                  <Image
-                    key={index}
-                    source={{uri: student.stuAva}}
-                    style={styles.group__item_image}
-                  />
-                </View>
+                {student.stuAva ? (
+                  <View style={[styles.group__item_image_layer, styles.shadow]}>
+                    <Image
+                      key={index}
+                      source={{uri: student.stuAva}}
+                      style={styles.group__item_image}
+                    />
+                  </View>
+                ) : (
+                  <View style={[styles.group__item_image_layer, styles.shadow]}>
+                    <Image
+                      key={index}
+                      source={NonAva}
+                      style={styles.group__item_image}
+                    />
+                  </View>
+                )}
                 <Text style={styles.group__item_qrcode}>
                   {student.qrcode.substring(9, 15)}
                 </Text>
@@ -335,55 +437,71 @@ export default function GroupDevice({navigation, route}) {
           </View>
           <View style={styles.group__item_information}>
             {deviceInfoArray.map((device, index) => (
-              <View style={[styles.group__item, styles.shadow]} key={index}>
-                {/* STATS */}
-                <View style={styles.group__item_stat}>
-                  {/* STEPS */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="run-circle"
-                      style={[styles.stat__icon, styles.step]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.steps}</Text>
-                      <Text style={styles.stat__unit}>steps</Text>
+              <GestureHandlerRootView
+                style={[styles.group__item, styles.shadow]}>
+                <Swipeable
+                  style={styles.group__item_content}
+                  renderRightActions={() =>
+                    rightSwipeActions(
+                      device.qrcode,
+                      studentInfoArray,
+                      deviceInfoArray,
+                    )
+                  }
+                  key={index}>
+                  {/* STATS */}
+                  <View style={styles.group__item_stat}>
+                    {/* STEPS */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="run-circle"
+                        style={[styles.stat__icon, styles.step]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>{device.steps}</Text>
+                        <Text style={styles.stat__unit}>steps</Text>
+                      </View>
+                    </View>
+                    {/* TIME */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="schedule"
+                        style={[styles.stat__icon, styles.time]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>{device.time}</Text>
+                        <Text style={styles.stat__unit}>time</Text>
+                      </View>
+                    </View>
+                    {/* CALORIES */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="local-fire-department"
+                        style={[styles.stat__icon, styles.calories]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>
+                          {device.calories}
+                        </Text>
+                        <Text style={styles.stat__unit}>kcal</Text>
+                      </View>
+                    </View>
+                    {/* DISTANCE */}
+                    <View style={styles.stat__info}>
+                      <Icon
+                        name="directions-walk"
+                        style={[styles.stat__icon, styles.distance]}
+                      />
+                      <View style={styles.stat__number_container}>
+                        <Text style={styles.stat__number}>
+                          {device.distance}
+                        </Text>
+                        <Text style={styles.stat__unit}>km</Text>
+                      </View>
                     </View>
                   </View>
-                  {/* TIME */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="schedule"
-                      style={[styles.stat__icon, styles.time]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.time}</Text>
-                      <Text style={styles.stat__unit}>time</Text>
-                    </View>
-                  </View>
-                  {/* CALORIES */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="local-fire-department"
-                      style={[styles.stat__icon, styles.calories]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.calories}</Text>
-                      <Text style={styles.stat__unit}>kcal</Text>
-                    </View>
-                  </View>
-                  {/* DISTANCE */}
-                  <View style={styles.stat__info}>
-                    <Icon
-                      name="directions-walk"
-                      style={[styles.stat__icon, styles.distance]}
-                    />
-                    <View style={styles.stat__number_container}>
-                      <Text style={styles.stat__number}>{device.distance}</Text>
-                      <Text style={styles.stat__unit}>km</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
+                </Swipeable>
+              </GestureHandlerRootView>
             ))}
           </View>
         </View>
@@ -391,19 +509,20 @@ export default function GroupDevice({navigation, route}) {
       {/* ADD DEVICE */}
       {deviceInfoArray.length < 10 ? (
         <View style={styles.group__add_container}>
-          <TouchableOpacity
-            onPress={handleSave}
-            style={styles.group__add_content}>
-            <Icon name="save" style={styles.groupp__add_icon} />
-          </TouchableOpacity>
           {isRunning ? (
             <></>
           ) : (
-            <TouchableOpacity
-              onPress={navigateToQRCode}
-              style={styles.group__add_content}>
-              <Icon name="add" style={styles.groupp__add_icon} />
-            </TouchableOpacity>
+            <View>
+              {isDone ? (
+                <TouchableOpacity
+                  onPress={navigateToQRCode}
+                  style={styles.group__add_content}>
+                  <Icon name="add" style={styles.groupp__add_icon} />
+                </TouchableOpacity>
+              ) : (
+                <></>
+              )}
+            </View>
           )}
         </View>
       ) : (
@@ -445,6 +564,24 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '900',
   },
+  delete__item_btn: {
+    backgroundColor: '#F44336',
+    borderTopRightRadius: res * 0.01,
+    borderBottomRightRadius: res * 0.01,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: res * 0.015,
+  },
+  delete__item: {
+    color: '#FFF',
+    fontSize: res * 0.04,
+  },
+  group__controller_container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    zIndex: 1,
+  },
   group__controller: {
     marginVertical: res * 0.03,
     flexDirection: 'row',
@@ -453,7 +590,7 @@ const styles = StyleSheet.create({
   },
   group__control_running: {
     width: '100%',
-    marginVertical: res * 0.01,
+    marginVertical: res * 0.03,
   },
   group__control_running_text: {
     fontSize: res * 0.02,
@@ -465,24 +602,48 @@ const styles = StyleSheet.create({
   group__controller_notruning: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: res * 0.04,
+    gap: res * 0.035,
+    backgroundColor: 'rgba(158,158,158,0.4)',
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.015,
+    borderRadius: res * 0.02,
   },
   group__control_btn_box: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    width: '100%',
+    // width: '100%',
+  },
+  group__finish_container: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  group__deviceCount: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: res * 0.05,
+    marginVertical: res * 0.02,
+  },
+  group__classes_container: {
+    backgroundColor: '#FFF',
+    padding: res * 0.01,
+    borderRadius: res * 0.01,
+  },
+  group__classes: {
+    color: '#000',
+    fontWeight: '600',
   },
   device__count: {
     fontWeight: '900',
     color: '#000',
   },
   group__control_btn: {
-    paddingHorizontal: res * 0.035,
-    paddingVertical: res * 0.015,
+    width: res * 0.06,
+    height: res * 0.06,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 5,
+    borderRadius: (res * 0.06) / 2,
   },
   group__clear: {
     backgroundColor: '#F44336',
@@ -490,8 +651,30 @@ const styles = StyleSheet.create({
   group__refresh: {
     backgroundColor: '#4CAF50',
   },
+  group__save: {
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  group__save_icon: {
+    color: '#4CAF50',
+  },
+  group__refresh_icon: {
+    color: '#FFF',
+  },
+  group__stop_btn: {
+    width: res * 0.09,
+    height: res * 0.09,
+    borderRadius: (res * 0.09) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: res * 0.01,
+  },
+  group__stop_icon: {
+    fontSize: res * 0.04,
+  },
   group__control_icon: {
-    fontSize: res * 0.025,
+    fontSize: res * 0.02,
     fontWeight: '600',
     color: '#FFF',
   },
@@ -538,12 +721,16 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   group__item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    borderRadius: res * 0.01,
     width: '100%',
     height: res * 0.2,
-    backgroundColor: '#FFF',
-    borderRadius: 10,
+  },
+  group__item_content: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   group__item_image: {
     width: res * 0.1,
@@ -570,6 +757,7 @@ const styles = StyleSheet.create({
   },
   group__item_stat: {
     width: '100%',
+    height: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignContent: 'stretch',
@@ -612,9 +800,11 @@ const styles = StyleSheet.create({
   group__add_container: {
     position: 'absolute',
     bottom: res * 0.04,
-    width: '100%',
+    right: 0,
     paddingHorizontal: res * 0.04,
     alignItems: 'flex-end',
+    zIndex: 2,
+    // backgroundColor: 'tomato',
   },
   group__add_content: {
     backgroundColor: '#15212D',
