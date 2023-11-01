@@ -26,7 +26,7 @@ export default function SubmitDone({navigation}) {
         <TouchableOpacity
           onPress={handleBackToScan}
           style={styles.success__scan_again}>
-          <Text style={styles.success__scan_again_text}>save again</Text>
+          <Text style={styles.success__scan_again_text}>done</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -45,9 +45,11 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   success__text: {
-    fontSize: res * 0.03,
+    fontSize: res * 0.025,
     fontWeight: '600',
     textAlign: 'center',
+    color:"#000",
+    paddingHorizontal: res * 0.04,
   },
   success__scan_container: {},
   success__scan_again: {

@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     gap: res * 0.02,
   },
   student__item: {
-    width: '48%',
+    width: '45%',
     backgroundColor: '#FFF',
     borderRadius: res * 0.01,
     padding: res * 0.01,
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   student__item_img: {
     width: '100%',
-    height: res * 0.3,
+    height: res * 0.2,
     resizeMode: 'cover',
     borderRadius: res * 0.01,
   },

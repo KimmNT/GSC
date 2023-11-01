@@ -906,7 +906,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.01,
     borderRadius: res * 0.02,
   },
@@ -1244,7 +1243,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: res * 0.03,
-    paddingHorizontal: res * 0.02,
   },
   button__container: {
     paddingVertical: res * 0.02,

@@ -56,6 +56,8 @@ const styles = StyleSheet.create({
     fontSize: res * 0.03,
     fontWeight: '600',
     textAlign: 'center',
+    color:"#000",
+    paddingHorizontal: res * 0.04,
   },
   success__scan_container: {},
   success__scan_again: {

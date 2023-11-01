@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     gap: res * 0.02,
   },
   class__item: {
-    width: '48%',
+    width: '45%',
     backgroundColor: '#4CAF50',
     // alignItems: 'center',
     padding: res * 0.002,

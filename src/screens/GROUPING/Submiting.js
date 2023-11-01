@@ -103,8 +103,6 @@ export default function Submiting({navigation}) {
                 <Text style={styles.submit__item_qrcode}>
                   {item.qrcode.substring(9, 15)}
                 </Text>
-              </View>
-              <View style={styles.submit__item_name}>
                 <Text style={styles.name}>{item.stuName}</Text>
               </View>
             </View>
@@ -151,16 +149,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   submit__item: {
-    width: '48%',
+    width: '45%',
     backgroundColor: '#FFF',
     paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.02,
     borderRadius: res * 0.015,
   },
   submit__item_container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    gap:res*0.015,
+    alignItems:"center",
+    width:"100%",
   },
   submit__item_img: {
     width: res * 0.1,
@@ -172,6 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     color: '#FFF',
     padding: res * 0.005,
+    textAlign:"center"
   },
   submit__item_name: {
     alignItems: 'center',

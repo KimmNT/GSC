@@ -322,9 +322,18 @@ export default function GroupDevice({navigation, route}) {
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
         <View style={styles.group__controller_container}>
-          {isClean ? (
             <View style={styles.group__controller}>
-              <TouchableOpacity
+              {isRunning ? (
+                <></>
+              ) : (
+                <View
+                  style={{
+                    width: '100%',
+                  }}>
+                  {isDone ? (
+                    <View style={styles.group__control_btn_box}>
+                      <View style={styles.group__controller_notruning}>
+                      <TouchableOpacity
                 onPress={handleClearData}
                 style={[
                   styles.group__control_btn,
@@ -339,19 +348,6 @@ export default function GroupDevice({navigation, route}) {
                   ]}
                 />
               </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.group__controller}>
-              {isRunning ? (
-                <></>
-              ) : (
-                <View
-                  style={{
-                    width: '100%',
-                  }}>
-                  {isDone ? (
-                    <View style={styles.group__control_btn_box}>
-                      <View style={styles.group__controller_notruning}>
                         <TouchableOpacity
                           onPress={handleRefreshGroup}
                           style={[
@@ -390,7 +386,6 @@ export default function GroupDevice({navigation, route}) {
                 </View>
               )}
             </View>
-          )}
         </View>
       ) : (
         <></>
@@ -566,11 +561,11 @@ const styles = StyleSheet.create({
   },
   delete__item_btn: {
     backgroundColor: '#F44336',
-    borderTopRightRadius: res * 0.01,
-    borderBottomRightRadius: res * 0.01,
+    borderRadius:res*0.01,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: res * 0.015,
+    margin:res*0.01
   },
   delete__item: {
     color: '#FFF',
@@ -602,7 +597,7 @@ const styles = StyleSheet.create({
   group__controller_notruning: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: res * 0.035,
+    gap: res * 0.02,
     backgroundColor: 'rgba(158,158,158,0.4)',
     paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.015,
