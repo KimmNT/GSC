@@ -277,6 +277,7 @@ export default function GroupDevice({navigation, route}) {
   const handleClearData = () => {
     qrArray.forEach((item, index) => {
       setTimeout(() => {
+        setIsClean(true)
         disconnectFromDevice();
         setGetQR('');
         setGetQR(item);

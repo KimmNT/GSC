@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.02,
     borderRadius: res * 0.015,
+    marginBottom:res*0.02
   },
   submit__item_container: {
     flexDirection: 'column',
