@@ -22,8 +22,9 @@ const App = () => {
   return (
     <DeviceInfoProvider>
       <StudentInfoProvider>
-        {/* <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider> */}
-        <Routing />
+        <SafeAreaProvider>
+          {isSplash ? <Splash /> : <Routing />}
+        </SafeAreaProvider>
         {/* <WeirdCom /> */}
       </StudentInfoProvider>
     </DeviceInfoProvider>
