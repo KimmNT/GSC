@@ -25,11 +25,10 @@ const App = () => {
         <SafeAreaProvider>
           {isSplash ? <Splash /> : <Routing />}
         </SafeAreaProvider>
-        {/* <WeirdCom /> */}
       </StudentInfoProvider>
     </DeviceInfoProvider>
 
-    // <TakeQRCode />
+    // <WeirdCom />
   );
 };
 

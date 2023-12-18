@@ -3,16 +3,19 @@ import {
   FlatList,
   Modal,
   SafeAreaView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
   Text,
+  TouchableOpacity,
+  View,
   Alert,
   Dimensions,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import ScanArea from './ScanArea';
+// import {BleManager} from 'react-native-ble-plx' --- FOR CONNECT MANUALLY;
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 const res = Dimensions.get('window').height;
 
 const DeviceModal = props => {
@@ -23,13 +26,14 @@ const DeviceModal = props => {
     closeModal,
     scanning,
     clearDevice,
+    stopScan,
   } = props;
+
   const [qrcode, setQRCode] = useState('');
   const [showMismatchAlert, setShowMismatchAlert] = useState(false);
-  const [scanned, setScanned] = useState(false); // Add a state variable to track if QR code is scanned
+  const [scanned, setScanned] = useState(false);
+  // const [manager, setManager] = useState(new BleManager());
 
-  // console.log('REPEAT MODAL');
-  //Change QR to empty string -> Open camera
   useEffect(() => {
     const timeout = setTimeout(() => {
       setQRCode('');
@@ -37,61 +41,34 @@ const DeviceModal = props => {
     return () => clearTimeout(timeout);
   }, [qrcode]);
 
-  //Convert QR code
-  const cutQR = qrcode.substring(3);
-
-  const renderDeviceModalListItem = useCallback(
-    item => {
-      const nameSplit = item.item.name.split('-');
-      const idName = [nameSplit[1]].toString();
-      // console.log(`id: ${idName}`);
-      //Scan for Android
-      if (Platform.OS === 'android') {
-        if (scanned && item.item.id === qrcode) {
-          // Check if QR code is scanned and ID matches
-          connectToPeripheral(item.item);
-          closeModal();
-        } else if (scanned) {
-          // If QR code is scanned but ID doesn't match, show alert
-          setShowMismatchAlert(true);
-        }
-        //Scan for iOS
-      } else if (Platform.OS === 'ios') {
-        if (scanned && idName === cutQR) {
-          // Check if QR code is scanned and ID matches
-          connectToPeripheral(item.item);
-          closeModal();
-        } else if (scanned) {
-          // If QR code is scanned but ID doesn't match, show alert
-          setShowMismatchAlert(true);
-        }
-      }
+  const handleQRCodeScanned = useCallback(
+    async ({data}) => {
+      setQRCode(data);
+      setScanned(true);
+      await connectToBLEDevice(
+        data,
+        devices,
+        connectToPeripheral,
+        closeModal,
+        setShowMismatchAlert,
+      );
+      // console.log(data);
     },
-    [closeModal, connectToPeripheral, qrcode, scanned],
+    [devices, connectToPeripheral, closeModal, setShowMismatchAlert],
   );
-
-  const handleQRCodeScanned = useCallback(({data}) => {
-    setQRCode(data);
-    setScanned(true); // Set the flag to indicate QR code is scanned
-  }, []);
 
   const handleAlertDismiss = useCallback(() => {
     setShowMismatchAlert(false);
-    setScanned(false); // Reset the scanned flag
-    setQRCode(''); // Reset the QR code value
+    setScanned(false);
+    setQRCode('');
     clearDevice();
-    scanning();
-  }, []);
+  }, [clearDevice]);
+
   return (
-    <Modal
-      style={styles.modalContainer}
-      animationType="slide"
-      transparent={false}
-      visible={visible}>
-      <SafeAreaView style={styles.modalTitle}>
+    <Modal animationType="slide" transparent={false} visible={visible}>
+      <SafeAreaView>
         <QRCodeScanner
           onRead={handleQRCodeScanned}
-          // onRead={setQRCode}
           reactivate={true}
           reactivateTimeout={2000}
           fadeIn={true}
@@ -106,19 +83,22 @@ const DeviceModal = props => {
           }}
         />
         <FlatList
-          contentContainerStyle={styles.modalFlatlistContiner}
           data={devices}
-          renderItem={renderDeviceModalListItem}
+          keyExtractor={item => `device_${item.id}`}
+          // renderItem={({item}) => (
+          //   <TouchableOpacity onPress={() => connectToPeripheral(item)}>
+          //     <Text>{`Name: ${item.name || 'N/A'}`}</Text>
+          //   </TouchableOpacity>
+          // )}
         />
       </SafeAreaView>
-      {/* Alert */}
       {showMismatchAlert && scanned && (
-        <View style={styles.alertContainer}>
-          <Text style={styles.alertText}>Device Is Not Available!</Text>
+        <View style={styles.modal__alert}>
+          <Text style={styles.modal__alert_text}>Device Is Not Available!</Text>
           <TouchableOpacity
-            style={styles.dismiss__container}
+            style={styles.modal__alert_btn}
             onPress={handleAlertDismiss}>
-            <Text style={styles.dismissText}>scan again</Text>
+            <Icon name="sync" style={styles.modal__alert_btn_icon} />
           </TouchableOpacity>
         </View>
       )}
@@ -126,39 +106,71 @@ const DeviceModal = props => {
   );
 };
 
-const styles = StyleSheet.create({
-  modalTitle: {
-    position: 'relative',
-    flex: 1,
-    backgroundColor: '#15212D',
-  },
+const connectToBLEDevice = async (
+  qrCode,
+  devices,
+  connectToPeripheral,
+  closeModal,
+  setShowMismatchAlert,
+) => {
+  const cutQR = qrCode.substring(3);
+  console.log(cutQR);
 
-  // Alert styles
-  alertContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
+  const matchingDevice = devices.find(item => {
+    const nameSplit = item.name.split('-');
+    const idName = [nameSplit[1]].toString();
+
+    if (Platform.OS === 'android' && item.id === qrCode) {
+      console.log('MATCH IN ANDROID!');
+      return true;
+    } else if (Platform.OS === 'ios' && idName === cutQR) {
+      console.log('MATCH IN IOS');
+      return true;
+    }
+
+    return false;
+  });
+
+  if (matchingDevice) {
+    try {
+      // Replace this with the appropriate method based on your BLE library
+      // For example: await manager.connectToDevice(matchingDevice.id);
+      // console.log('Connected to device:' item.item.name);
+      await connectToPeripheral(matchingDevice);
+      closeModal();
+    } catch (error) {
+      console.error('Error connecting to BLE device:', error);
+      setShowMismatchAlert(true);
+    }
+  } else {
+    setShowMismatchAlert(true);
+  }
+};
+const styles = StyleSheet.create({
+  modal__alert: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(33,33,33,0.9)',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: res * 0.05,
   },
-  alertText: {
-    color: '#FFF',
-    fontSize: res * 0.03,
-    marginBottom: res * 0.05,
+  modal__alert_text: {
+    fontSize: res * 0.035,
+    color: '#4CAF50',
+    fontWeight: '600',
   },
-  dismiss__container: {
+  modal__alert_btn: {
     backgroundColor: '#4CAF50',
-    paddingHorizontal: res * 0.04,
-    paddingVertical: res * 0.02,
-    borderRadius: 5,
+    width: res * 0.09,
+    height: res * 0.09,
+    borderRadius: (res * 0.09) / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  dismissText: {
+  modal__alert_btn_icon: {
     color: '#FFF',
-    fontSize: res * 0.02,
-    textTransform: 'uppercase',
+    fontSize: res * 0.04,
   },
 });
 

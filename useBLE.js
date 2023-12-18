@@ -1,5 +1,5 @@
 /* eslint-disable no-bitwise */
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {BleManager} from 'react-native-ble-plx';
 import {atob, btoa} from 'react-native-quick-base64';
@@ -15,7 +15,7 @@ function useBLE() {
   const [allDevices, setAllDevices] = useState([]);
   const [connectedDevice, setConnectedDevice] = useState(null);
   const [data, setData] = useState('Device data');
-  const {deviceInfoArray} = useDeviceInfo();
+  // const {deviceInfoArray} = useDeviceInfo();
 
   const requestPermissions = async cb => {
     if (Platform.OS === 'android') {
@@ -34,11 +34,9 @@ function useBLE() {
       cb(true);
     }
   };
-
   const isDuplicateDevice = (devices, nextDevice) =>
     devices.findIndex(device => nextDevice.id === device.id) > -1;
-
-  const scanForDevices = () => {
+  const startScan = () => {
     console.log('SCANNING');
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
@@ -56,24 +54,75 @@ function useBLE() {
   };
   const clearDevices = () => {
     setAllDevices([]);
-    console.log(allDevices);
+    // console.log(allDevices);
   };
   const stopDevice = () => {
     console.log('STOP SCANNING');
     bleManager.stopDeviceScan();
   };
+
   const connectToDevice = async device => {
-    console.log('CONNECTING');
     try {
-      const deviceConnection = await bleManager.connectToDevice(device.id);
-      setConnectedDevice(deviceConnection);
-      bleManager.stopDeviceScan();
-      await deviceConnection.discoverAllServicesAndCharacteristics();
-      startStreamingData(deviceConnection);
-    } catch (e) {
-      console.log('FAILED TO CONNECT', e);
+      console.log('CONNECTING TO DEVICE:', device.id);
+      await bleManager.connectToDevice(device.id);
+      isDuplicateDevice;
+      setConnectedDevice(device);
+      // Stop device scan (assuming startScan and stopScan are functions in your component)
+      stopScan();
+      // Discover services and characteristics
+      await device.discoverAllServicesAndCharacteristics();
+      // Start streaming data (assuming startStreamingData is a function in your component)
+      startStreamingData(device);
+      console.log('CONNECT SUCCESSFULLY');
+    } catch (error) {
+      console.error('Failed to connect to BLE device:', error);
+      // Log additional information about the device
+      console.log('Device ID:', device.id);
+      // Handle the error, e.g., show an alert or set an error state
     }
   };
+
+  //STOP SCAN
+  const stopScan = () => {
+    bleManager.stopDeviceScan();
+    // setScanning(false);
+    console.log('Stopped BLE scan.');
+  };
+
+  //CHECK BLUETOOTH STATE
+  useEffect(() => {
+    // Start scanning when the component mounts
+    startScan();
+
+    // Stop scanning when the component unmounts
+    return () => {
+      stopScan();
+      // Clear up resources when the component unmounts
+      bleManager.destroy();
+    };
+  }, [bleManager]);
+
+  //CHECK BLUETOOTH STATE
+  useEffect(() => {
+    const handleBleStateChange = newState => {
+      console.log('BLE state changed:', newState);
+
+      if (newState === 'PoweredOn') {
+        // Start scanning when Bluetooth is in the PoweredOn state
+        startScan();
+      } else {
+        // Handle other states or show an error message
+        console.warn('Bluetooth is not in a powered-on state.');
+      }
+    };
+
+    const subscription = bleManager.onStateChange(handleBleStateChange, true);
+
+    // Cleanup function
+    return () => {
+      subscription.remove();
+    };
+  }, [bleManager]);
 
   const disconnectFromDevice = () => {
     console.log('DISCONNECTED');
@@ -135,10 +184,11 @@ function useBLE() {
       console.log('No device connected. Cannot send data.');
     }
   };
-
+  const totalDevices = allDevices.length;
   return {
-    scanForDevices,
+    // scanForDevices,
     // scanForPeripherals,
+    startScan,
     stopDevice,
     requestPermissions,
     connectToDevice,
@@ -148,6 +198,7 @@ function useBLE() {
     data,
     sendDataToRXCharacteristic,
     clearDevices,
+    totalDevices,
   };
 }
 
