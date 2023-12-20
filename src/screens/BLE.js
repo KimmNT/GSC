@@ -18,8 +18,10 @@ import Loading from './components/Loading';
 import useBLE from '../../useBLE';
 import Svg, {G, Circle} from 'react-native-svg';
 import MapView, {Heatmap, Marker} from 'react-native-maps';
+import {BleManager} from 'react-native-ble-plx';
 
 const res = Dimensions.get('window').height;
+const bleManager = new BleManager();
 
 //IMAGE
 import welcomeBG from '../../assets/images/welcome_bg.png';
@@ -41,16 +43,17 @@ const BLE = ({
   max = 500,
 }) => {
   const {
-    requestPermissions,
-    scanForDevices,
-    allDevices,
-    connectToDevice,
-    connectedDevice,
-    data,
-    disconnectFromDevice,
-    sendDataToRXCharacteristic,
+    startScan,
     stopDevice,
+    requestPermissions,
+    connectToDevice,
+    allDevices,
+    connectedDevice,
+    disconnectFromDevice,
+    data,
+    sendDataToRXCharacteristic,
     clearDevices,
+    totalDevices,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isGetClassVisibal, setGetClassVisible] = useState(false);
@@ -80,7 +83,7 @@ const BLE = ({
   calories = Math.round(steps * 0.03);
   // calories = 501;
   caloriesTarget = 500;
-  distance = (Math.floor(steps * 0.2) / 1000).toFixed(2);
+  distance = Math.floor(steps * 0.2);
 
   //CLOCK
   const [clock, setClock] = useState(new Date());
@@ -102,6 +105,32 @@ const BLE = ({
   const timeString = `${formattedHours}:${minutes}`;
   console.log(`${clock.getMinutes()}m : ${clock.getSeconds()}s`);
 
+  //CHECK BLUETOOTH STATE
+  useEffect(() => {
+    const handleBleStateChange = newState => {
+      console.log('BLE state changed:', newState);
+
+      if (newState === 'PoweredOn') {
+        // Start scanning when Bluetooth is in the PoweredOn state
+        console.log('BLUETOOTH IS ON');
+      } else {
+        // Handle other states or show an error message
+        Alert.alert(
+          '',
+          'BLUETOOTH is off.\nPlease turn on BLUETOOTH to continue',
+        );
+      }
+    };
+
+    // const subscription = bleManager.onStateChange(handleBleStateChange, true);
+    const subscription = bleManager.onStateChange(handleBleStateChange, true);
+
+    // Cleanup function
+    return () => {
+      subscription.remove();
+    };
+  }, [bleManager]);
+
   //Hide Modal
   const hideModal = () => {
     setIsModalVisible(false);
@@ -115,7 +144,7 @@ const BLE = ({
     requestPermissions(isGranted => {
       if (isGranted) {
         setIsModalVisible(true);
-        scanForDevices();
+        startScan();
       }
     });
   };
@@ -522,7 +551,7 @@ const BLE = ({
                                 </Text>
                                 <Text
                                   style={[styles.unit, styles.spotlight__text]}>
-                                  km
+                                  meters
                                 </Text>
                               </View>
                             ) : (
@@ -789,7 +818,8 @@ const BLE = ({
         closeModal={hideModal}
         visible={isModalVisible}
         connectToPeripheral={connectToDevice}
-        scanning={scanForDevices}
+        // scanning={scanForDevices}
+        scanning={startScan}
         devices={allDevices}
         stopScan={stopDevice}
         clearDevice={clearDevices}

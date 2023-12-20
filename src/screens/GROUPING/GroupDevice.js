@@ -43,13 +43,17 @@ const handleDeleteStudent = (qrcode, studentArray, deviceArray) => {
 
 export default function GroupDevice({navigation, route}) {
   const {
+    startScan,
+    stopDevice,
     requestPermissions,
-    scanForDevices,
-    allDevices,
     connectToDevice,
-    data,
+    allDevices,
+    connectedDevice,
     disconnectFromDevice,
+    data,
     sendDataToRXCharacteristic,
+    clearDevices,
+    totalDevices,
   } = useBLE();
 
   const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
@@ -79,7 +83,7 @@ export default function GroupDevice({navigation, route}) {
   dataRunAVG = parseFloat([dataSplited[9]] * 3.6).toFixed(2);
   dataRunMaX = parseFloat(([dataSplited[10]] * 3.6).toFixed(2));
   dataCalories = parseFloat(Math.round(dataSteps * 0.03)).toFixed(2);
-  dataDistance = parseFloat(Math.floor(dataSteps * 0.2) / 1000).toFixed(2);
+  dataDistance = parseFloat(Math.floor(dataSteps * 0.2)).toFixed(2);
   dataJump = parseInt([dataSplited[6]]).toFixed(2);
 
   //HANDLE PUSH QRCODE VALUE INTO NEW ARRAY
@@ -92,7 +96,7 @@ export default function GroupDevice({navigation, route}) {
   }, [qrArray]);
 
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 4000 * qrArray.length + 1000;
+  const qrArrayTotalTimeRun = 3000 * qrArray.length + 1000;
   //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
 
   //HANDLE SEND TO RX
@@ -101,40 +105,46 @@ export default function GroupDevice({navigation, route}) {
       if (isClean) {
         sendDataToRXCharacteristic('read');
         sendDataToRXCharacteristic('delete');
-        handleSubmit();
+        connectToBLEDevice();
         setUpdate(!update);
+        // handleSubmit();
       } else {
         sendDataToRXCharacteristic('read');
-        handleSubmit();
+        connectToBLEDevice();
+        // handleSubmit();
         setUpdate(!update);
       }
     }, 1000);
     return () => clearInterval(sendInterval);
   }, [update]);
 
-  //RENDER ITEMS AND CONNECTION IF MATCH QRCODE
-  const renderDeviceModalListItem = useCallback(
-    item => {
-      const nameSplit = item.item.name.split('-');
+  const connectToBLEDevice = async () => {
+    const matchingDevice = allDevices.find(item => {
+      const nameSplit = item.name.split('-');
       const idName = [nameSplit[1]].toString();
-      //Scan for Android
-      if (Platform.OS === 'android') {
-        if (idName === getQR) {
-          connectToDevice(item.item);
-        } else {
-          return true;
-        }
-        //Scan for iOS
-      } else if (Platform.OS === 'ios') {
-        if (idName === getQR) {
-          connectToDevice(item.item);
-        } else {
-          return true;
-        }
+      if (Platform.OS === 'android' && item.id === getQR) {
+        console.log('MATCH IN ANDROID!');
+        return true;
+      } else if (Platform.OS === 'ios' && idName === getQR) {
+        console.log('MATCH IN IOS');
+        return true;
       }
-    },
-    [getQR],
-  );
+
+      return false;
+    });
+
+    if (matchingDevice) {
+      try {
+        await connectToDevice(matchingDevice);
+        handleSubmit();
+      } catch (error) {
+        console.error('Error connecting to BLE device:', error);
+      }
+    } else {
+      console.log('NOT MATCHING!');
+    }
+  };
+
   //QUIT TO HOME PAGE
   const handleQuit = () => {
     navigation.goBack();
@@ -147,9 +157,9 @@ export default function GroupDevice({navigation, route}) {
         setGetQR('');
         setGetQR(item);
         setIsRunning(true);
-        // disconnectFromDevice();
+        // handleSubmit();
         console.log(item);
-      }, index * 4000);
+      }, index * 3000);
     });
   };
   //NAVIGATE TO  QRCODE
@@ -162,32 +172,12 @@ export default function GroupDevice({navigation, route}) {
     } else {
       requestPermissions(isGranted => {
         if (isGranted) {
-          scanForDevices();
+          // startScan();
           navigation.navigate('TakeQRCode', {classIdChose});
         }
       });
     }
   };
-  //CLEAR DEVICES LIST
-  // const handleClearGroup = () => {
-  //   Alert.alert(
-  //     'Warning!',
-  //     "Do you want to clear all students's information ?",
-  //     [
-  //       {
-  //         text: 'Cancel',
-  //         onPress: () => console.log('cancel clear'),
-  //       },
-  //       {
-  //         text: 'OK',
-  //         onPress: () => {
-  //           clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
-  //           setGetQR(''), disconnectFromDevice(), clearStudentInfoArray();
-  //         },
-  //       },
-  //     ],
-  //   );
-  // };
   //SUBMIT FUNCTION
   const handleSubmit = () => {
     // Find the index of the existing object with the same "qrcode" in deviceInfoArray
@@ -212,27 +202,25 @@ export default function GroupDevice({navigation, route}) {
       deviceInfoArray[existingIndex] = newDeviceInfo;
     }
   };
+
   //HANDLE DISCONNECT
   useEffect(() => {
     if (isDone === false && isRunning === false) {
-      Alert.alert(
-        'Successfully!',
-        'All devices have been updated successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              disconnectFromDevice();
-              setGetQR('');
-              setIsRunning(false);
-              setUpdate(!update);
-              setIsDone(true);
-            },
+      Alert.alert('Successfully!', 'The process has been completed.', [
+        {
+          text: 'OK',
+          onPress: () => {
+            disconnectFromDevice();
+            setGetQR('');
+            setIsRunning(false);
+            setUpdate(!update);
+            setIsDone(true);
           },
-        ],
-      );
+        },
+      ]);
     }
   }, [isDone, isRunning]);
+
   //CHANGE STATE AFTER AMOUNT OF TIME
   useEffect(() => {
     if (isRunning) {
@@ -273,11 +261,11 @@ export default function GroupDevice({navigation, route}) {
       },
     ]);
   };
-
+  //HANDLE CLEAR DATA
   const handleClearData = () => {
     qrArray.forEach((item, index) => {
       setTimeout(() => {
-        setIsClean(true)
+        setIsClean(true);
         disconnectFromDevice();
         setGetQR('');
         setGetQR(item);
@@ -286,6 +274,8 @@ export default function GroupDevice({navigation, route}) {
       }, index * 4000);
     });
   };
+
+  // console.log(deviceInfoArray);
   return (
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
@@ -323,70 +313,73 @@ export default function GroupDevice({navigation, route}) {
       {/* CONTROLLER */}
       {deviceInfoArray.length > 0 ? (
         <View style={styles.group__controller_container}>
-            <View style={styles.group__controller}>
-              {isRunning ? (
-                <></>
-              ) : (
-                <View
-                  style={{
-                    width: '100%',
-                  }}>
-                  {isDone ? (
-                    <View style={styles.group__control_btn_box}>
-                      <View style={styles.group__controller_notruning}>
+          <View style={styles.group__controller}>
+            {isRunning ? (
+              <></>
+            ) : (
+              <View
+                style={{
+                  width: '100%',
+                }}>
+                {isDone ? (
+                  <View style={styles.group__control_btn_box}>
+                    <View style={styles.group__controller_notruning}>
+                      {/* CLEAN */}
+                      {/* <TouchableOpacity
+                        onPress={handleClearData}
+                        style={[
+                          styles.group__control_btn,
+                          styles.group__clear,
+                          styles.shadow,
+                        ]}>
+                        <Icon
+                          name="cleaning-services"
+                          style={[
+                            styles.group__control_icon,
+                            styles.group__refresh_icon,
+                          ]}
+                        />
+                      </TouchableOpacity> */}
+                      {/* REFRESH */}
                       <TouchableOpacity
-                onPress={handleClearData}
-                style={[
-                  styles.group__control_btn,
-                  styles.group__clear,
-                  styles.shadow,
-                ]}>
-                <Icon
-                  name="cleaning-services"
-                  style={[
-                    styles.group__control_icon,
-                    styles.group__refresh_icon,
-                  ]}
-                />
-              </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={handleRefreshGroup}
+                        onPress={handleRefreshGroup}
+                        style={[
+                          styles.group__control_btn,
+                          styles.group__refresh,
+                          styles.shadow,
+                        ]}>
+                        <Icon
+                          name="refresh"
                           style={[
-                            styles.group__control_btn,
-                            styles.group__refresh,
-                            styles.shadow,
-                          ]}>
-                          <Icon
-                            name="refresh"
-                            style={[
-                              styles.group__control_icon,
-                              styles.group__refresh_icon,
-                            ]}
-                          />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={handleSave}
+                            styles.group__control_icon,
+                            styles.group__refresh_icon,
+                          ]}
+                        />
+                      </TouchableOpacity>
+                      {/* SAVE */}
+                      <TouchableOpacity
+                        onPress={handleSave}
+                        style={[
+                          styles.group__control_btn,
+                          styles.group__save,
+                          styles.shadow,
+                        ]}>
+                        <Icon
+                          name="upload"
                           style={[
-                            styles.group__control_btn,
-                            styles.group__save,
-                            styles.shadow,
-                          ]}>
-                          <Icon
-                            name="upload"
-                            style={[
-                              styles.group__control_icon,
-                              styles.group__save_icon,
-                            ]}
-                          />
-                        </TouchableOpacity>
-                      </View>
+                            styles.group__control_icon,
+                            styles.group__save_icon,
+                          ]}
+                        />
+                      </TouchableOpacity>
                     </View>
-                  ) : (
-                    <></>
-                  )}
-                </View>
-              )}
-            </View>
+                  </View>
+                ) : (
+                  <></>
+                )}
+              </View>
+            )}
+          </View>
         </View>
       ) : (
         <></>
@@ -394,7 +387,7 @@ export default function GroupDevice({navigation, route}) {
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
         {/* DEBUG THE DATA */}
-        {/* <Text
+        <View
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -402,8 +395,8 @@ export default function GroupDevice({navigation, route}) {
             color: '#000',
             width: '100%',
           }}>
-          {data}
-        </Text> */}
+          <Text>{data}</Text>
+        </View>
         <View style={styles.group__content}>
           <View style={styles.group__item_imagelist}>
             {studentInfoArray.map((student, index) => (
@@ -447,54 +440,85 @@ export default function GroupDevice({navigation, route}) {
                   key={index}>
                   {/* STATS */}
                   <View style={styles.group__item_stat}>
+                    {/* WHEN THE RESULT NOT IN NUMBER TYPE */}
+                    {device.steps == 'NaN' ? (
+                      <View style={styles.group__item_notasnumber}>
+                        <Icon name="sensors-off" style={styles.out__of_range} />
+                        <Text style={styles.out__of_range_text}>
+                          Try again later
+                        </Text>
+                      </View>
+                    ) : (
+                      <></>
+                    )}
                     {/* STEPS */}
-                    <View style={styles.stat__info}>
-                      <Icon
-                        name="run-circle"
-                        style={[styles.stat__icon, styles.step]}
-                      />
-                      <View style={styles.stat__number_container}>
-                        <Text style={styles.stat__number}>{device.steps}</Text>
-                        <Text style={styles.stat__unit}>steps</Text>
+                    {device.steps == 'NaN' ? (
+                      <></>
+                    ) : (
+                      <View style={styles.stat__info}>
+                        <Icon
+                          name="run-circle"
+                          style={[styles.stat__icon, styles.step]}
+                        />
+                        <View style={styles.stat__number_container}>
+                          <Text style={styles.stat__number}>
+                            {parseInt(device.steps).toFixed(0)}
+                          </Text>
+                          <Text style={styles.stat__unit}>steps</Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                     {/* TIME */}
-                    <View style={styles.stat__info}>
-                      <Icon
-                        name="schedule"
-                        style={[styles.stat__icon, styles.time]}
-                      />
-                      <View style={styles.stat__number_container}>
-                        <Text style={styles.stat__number}>{device.time}</Text>
-                        <Text style={styles.stat__unit}>time</Text>
+                    {device.time == 'NaN' ? (
+                      <></>
+                    ) : (
+                      <View style={styles.stat__info}>
+                        <Icon
+                          name="schedule"
+                          style={[styles.stat__icon, styles.time]}
+                        />
+                        <View style={styles.stat__number_container}>
+                          <Text style={styles.stat__number}>
+                            {parseInt(device.time).toFixed(0)}
+                          </Text>
+                          <Text style={styles.stat__unit}>minutes</Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                     {/* CALORIES */}
-                    <View style={styles.stat__info}>
-                      <Icon
-                        name="local-fire-department"
-                        style={[styles.stat__icon, styles.calories]}
-                      />
-                      <View style={styles.stat__number_container}>
-                        <Text style={styles.stat__number}>
-                          {device.calories}
-                        </Text>
-                        <Text style={styles.stat__unit}>kcal</Text>
+                    {device.calories == 'NaN' ? (
+                      <></>
+                    ) : (
+                      <View style={styles.stat__info}>
+                        <Icon
+                          name="local-fire-department"
+                          style={[styles.stat__icon, styles.calories]}
+                        />
+                        <View style={styles.stat__number_container}>
+                          <Text style={styles.stat__number}>
+                            {parseFloat(device.calories).toFixed(0)}
+                          </Text>
+                          <Text style={styles.stat__unit}>kcal</Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                     {/* DISTANCE */}
-                    <View style={styles.stat__info}>
-                      <Icon
-                        name="directions-walk"
-                        style={[styles.stat__icon, styles.distance]}
-                      />
-                      <View style={styles.stat__number_container}>
-                        <Text style={styles.stat__number}>
-                          {device.distance}
-                        </Text>
-                        <Text style={styles.stat__unit}>km</Text>
+                    {device.distance == 'NaN' ? (
+                      <></>
+                    ) : (
+                      <View style={styles.stat__info}>
+                        <Icon
+                          name="directions-walk"
+                          style={[styles.stat__icon, styles.distance]}
+                        />
+                        <View style={styles.stat__number_container}>
+                          <Text style={styles.stat__number}>
+                            {parseInt(device.distance).toFixed(0)}
+                          </Text>
+                          <Text style={styles.stat__unit}>meters</Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                   </View>
                 </Swipeable>
               </GestureHandlerRootView>
@@ -509,6 +533,7 @@ export default function GroupDevice({navigation, route}) {
             <></>
           ) : (
             <View>
+              {/* ADD DEVICE */}
               {isDone ? (
                 <TouchableOpacity
                   onPress={navigateToQRCode}
@@ -525,9 +550,9 @@ export default function GroupDevice({navigation, route}) {
         <></>
       )}
       <FlatList
-        contentContainerStyle={styles.modalFlatlistContiner}
         data={allDevices}
-        renderItem={renderDeviceModalListItem}
+        keyExtractor={item => `device_${item.id}`}
+        // renderItem={renderDeviceModalListItem}
       />
       <GetClassesModel
         closeModal={hideGetClass}
@@ -562,11 +587,11 @@ const styles = StyleSheet.create({
   },
   delete__item_btn: {
     backgroundColor: '#F44336',
-    borderRadius:res*0.01,
+    borderRadius: res * 0.01,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: res * 0.015,
-    margin:res*0.01
+    margin: res * 0.01,
   },
   delete__item: {
     color: '#FFF',
@@ -759,6 +784,21 @@ const styles = StyleSheet.create({
     alignContent: 'stretch',
     flexWrap: 'wrap',
     paddingHorizontal: res * 0.01,
+  },
+  group__item_notasnumber: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  out__of_range: {
+    fontSize: res * 0.06,
+    color: '#000',
+  },
+  out__of_range_text: {
+    marginTop: res * 0.02,
+    fontSize: res * 0.02,
+    color: '#000',
+    fontWeight: '600',
   },
   stat__info: {
     width: '40%',
