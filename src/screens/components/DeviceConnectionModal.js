@@ -62,6 +62,7 @@ const DeviceModal = props => {
     setScanned(false);
     setQRCode('');
     clearDevice();
+    scanning();
   }, [clearDevice]);
 
   return (
@@ -85,11 +86,11 @@ const DeviceModal = props => {
         <FlatList
           data={devices}
           keyExtractor={item => `device_${item.id}`}
-          // renderItem={({item}) => (
-          //   <TouchableOpacity onPress={() => connectToPeripheral(item)}>
-          //     <Text>{`Name: ${item.name || 'N/A'}`}</Text>
-          //   </TouchableOpacity>
-          // )}
+          renderItem={({item}) => (
+            <TouchableOpacity onPress={() => connectToPeripheral(item)}>
+              {/* <Text>{`Name: ${item.name || 'N/A'}`}</Text> */}
+            </TouchableOpacity>
+          )}
         />
       </SafeAreaView>
       {showMismatchAlert && scanned && (

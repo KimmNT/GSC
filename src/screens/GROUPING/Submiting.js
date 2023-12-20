@@ -61,6 +61,7 @@ export default function Submiting({navigation}) {
           speed_max: item.speed__max,
           date: formattedDate,
         };
+
         console.log(data);
         const headers = {
           'Content-Type': 'application/json',
@@ -154,13 +155,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: res * 0.02,
     paddingVertical: res * 0.02,
     borderRadius: res * 0.015,
-    marginBottom:res*0.02
+    marginBottom: res * 0.02,
   },
   submit__item_container: {
     flexDirection: 'column',
-    gap:res*0.015,
-    alignItems:"center",
-    width:"100%",
+    gap: res * 0.015,
+    alignItems: 'center',
+    width: '100%',
   },
   submit__item_img: {
     width: res * 0.1,
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     color: '#FFF',
     padding: res * 0.005,
-    textAlign:"center"
+    textAlign: 'center',
   },
   submit__item_name: {
     alignItems: 'center',

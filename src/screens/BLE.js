@@ -83,7 +83,7 @@ const BLE = ({
   calories = Math.round(steps * 0.03);
   // calories = 501;
   caloriesTarget = 500;
-  distance = Math.floor(steps * 0.2).toFixed(2);
+  distance = Math.floor(steps * 0.2);
 
   //CLOCK
   const [clock, setClock] = useState(new Date());

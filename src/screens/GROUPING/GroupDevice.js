@@ -105,10 +105,12 @@ export default function GroupDevice({navigation, route}) {
       if (isClean) {
         sendDataToRXCharacteristic('read');
         sendDataToRXCharacteristic('delete');
-        // handleSubmit();
+        connectToBLEDevice();
         setUpdate(!update);
+        // handleSubmit();
       } else {
         sendDataToRXCharacteristic('read');
+        connectToBLEDevice();
         // handleSubmit();
         setUpdate(!update);
       }
@@ -116,29 +118,32 @@ export default function GroupDevice({navigation, route}) {
     return () => clearInterval(sendInterval);
   }, [update]);
 
-  //RENDER ITEMS AND CONNECTION IF MATCH QRCODE
-  // const renderDeviceModalListItem = useCallback(
-  //   item => {
-  //     const nameSplit = item.item.name.split('-');
-  //     const idName = [nameSplit[1]].toString();
-  //     //Scan for Android
-  //     if (Platform.OS === 'android') {
-  //       if (idName === getQR) {
-  //         connectToDevice(item.item);
-  //       } else {
-  //         return true;
-  //       }
-  //       //Scan for iOS
-  //     } else if (Platform.OS === 'ios') {
-  //       if (idName === getQR) {
-  //         connectToDevice(item.item);
-  //       } else {
-  //         return true;
-  //       }
-  //     }
-  //   },
-  //   [getQR],
-  // );
+  const connectToBLEDevice = async () => {
+    const matchingDevice = allDevices.find(item => {
+      const nameSplit = item.name.split('-');
+      const idName = [nameSplit[1]].toString();
+      if (Platform.OS === 'android' && item.id === getQR) {
+        console.log('MATCH IN ANDROID!');
+        return true;
+      } else if (Platform.OS === 'ios' && idName === getQR) {
+        console.log('MATCH IN IOS');
+        return true;
+      }
+
+      return false;
+    });
+
+    if (matchingDevice) {
+      try {
+        await connectToDevice(matchingDevice);
+        handleSubmit();
+      } catch (error) {
+        console.error('Error connecting to BLE device:', error);
+      }
+    } else {
+      console.log('NOT MATCHING!');
+    }
+  };
 
   //QUIT TO HOME PAGE
   const handleQuit = () => {
@@ -152,7 +157,7 @@ export default function GroupDevice({navigation, route}) {
         setGetQR('');
         setGetQR(item);
         setIsRunning(true);
-        handleSubmit();
+        // handleSubmit();
         console.log(item);
       }, index * 3000);
     });
@@ -167,32 +172,12 @@ export default function GroupDevice({navigation, route}) {
     } else {
       requestPermissions(isGranted => {
         if (isGranted) {
-          scanForDevices();
+          // startScan();
           navigation.navigate('TakeQRCode', {classIdChose});
         }
       });
     }
   };
-  //CLEAR DEVICES LIST
-  // const handleClearGroup = () => {
-  //   Alert.alert(
-  //     'Warning!',
-  //     "Do you want to clear all students's information ?",
-  //     [
-  //       {
-  //         text: 'Cancel',
-  //         onPress: () => console.log('cancel clear'),
-  //       },
-  //       {
-  //         text: 'OK',
-  //         onPress: () => {
-  //           clearDeviceInfoArray(), setQRArray([]), setImgArray([]);
-  //           setGetQR(''), disconnectFromDevice(), clearStudentInfoArray();
-  //         },
-  //       },
-  //     ],
-  //   );
-  // };
   //SUBMIT FUNCTION
   const handleSubmit = () => {
     // Find the index of the existing object with the same "qrcode" in deviceInfoArray
@@ -339,7 +324,8 @@ export default function GroupDevice({navigation, route}) {
                 {isDone ? (
                   <View style={styles.group__control_btn_box}>
                     <View style={styles.group__controller_notruning}>
-                      <TouchableOpacity
+                      {/* CLEAN */}
+                      {/* <TouchableOpacity
                         onPress={handleClearData}
                         style={[
                           styles.group__control_btn,
@@ -353,7 +339,8 @@ export default function GroupDevice({navigation, route}) {
                             styles.group__refresh_icon,
                           ]}
                         />
-                      </TouchableOpacity>
+                      </TouchableOpacity> */}
+                      {/* REFRESH */}
                       <TouchableOpacity
                         onPress={handleRefreshGroup}
                         style={[
@@ -369,6 +356,7 @@ export default function GroupDevice({navigation, route}) {
                           ]}
                         />
                       </TouchableOpacity>
+                      {/* SAVE */}
                       <TouchableOpacity
                         onPress={handleSave}
                         style={[
@@ -452,7 +440,7 @@ export default function GroupDevice({navigation, route}) {
                   key={index}>
                   {/* STATS */}
                   <View style={styles.group__item_stat}>
-                    {/* WHEN THE RESULT NOT AS NUMBER TYPE */}
+                    {/* WHEN THE RESULT NOT IN NUMBER TYPE */}
                     {device.steps == 'NaN' ? (
                       <View style={styles.group__item_notasnumber}>
                         <Icon name="sensors-off" style={styles.out__of_range} />
@@ -474,7 +462,7 @@ export default function GroupDevice({navigation, route}) {
                         />
                         <View style={styles.stat__number_container}>
                           <Text style={styles.stat__number}>
-                            {device.steps}
+                            {parseInt(device.steps).toFixed(0)}
                           </Text>
                           <Text style={styles.stat__unit}>steps</Text>
                         </View>
@@ -490,7 +478,9 @@ export default function GroupDevice({navigation, route}) {
                           style={[styles.stat__icon, styles.time]}
                         />
                         <View style={styles.stat__number_container}>
-                          <Text style={styles.stat__number}>{device.time}</Text>
+                          <Text style={styles.stat__number}>
+                            {parseInt(device.time).toFixed(0)}
+                          </Text>
                           <Text style={styles.stat__unit}>minutes</Text>
                         </View>
                       </View>
@@ -506,7 +496,7 @@ export default function GroupDevice({navigation, route}) {
                         />
                         <View style={styles.stat__number_container}>
                           <Text style={styles.stat__number}>
-                            {device.calories}
+                            {parseFloat(device.calories).toFixed(0)}
                           </Text>
                           <Text style={styles.stat__unit}>kcal</Text>
                         </View>
@@ -523,7 +513,7 @@ export default function GroupDevice({navigation, route}) {
                         />
                         <View style={styles.stat__number_container}>
                           <Text style={styles.stat__number}>
-                            {device.distance}
+                            {parseInt(device.distance).toFixed(0)}
                           </Text>
                           <Text style={styles.stat__unit}>meters</Text>
                         </View>
@@ -543,6 +533,7 @@ export default function GroupDevice({navigation, route}) {
             <></>
           ) : (
             <View>
+              {/* ADD DEVICE */}
               {isDone ? (
                 <TouchableOpacity
                   onPress={navigateToQRCode}
