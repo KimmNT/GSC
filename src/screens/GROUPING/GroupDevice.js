@@ -42,6 +42,9 @@ const handleDeleteStudent = (qrcode, studentArray, deviceArray) => {
 };
 
 export default function GroupDevice({navigation, route}) {
+  navigation.setOptions({
+    gestureEnabled: false,
+  });
   const {
     startScan,
     stopDevice,
@@ -73,6 +76,9 @@ export default function GroupDevice({navigation, route}) {
     'Choose your class/club',
   );
 
+  //TIMEOUT
+  const timeOut = 4500;
+
   //HANDLE SPLIT DATA
   const dataSplited = data.split('|');
   id = parseInt([dataSplited[0]]);
@@ -96,22 +102,20 @@ export default function GroupDevice({navigation, route}) {
   }, [qrArray]);
 
   //COUNT ITEMS IN qrArray
-  const qrArrayTotalTimeRun = 3000 * qrArray.length + 1000;
+  const qrArrayTotalTimeRun = timeOut * qrArray.length + 1000;
   //each device take A(s) to run * quantity of devices + add more 5s to make sure can take the latest data
 
   //HANDLE SEND TO RX
   useEffect(() => {
     const sendInterval = setInterval(() => {
       if (isClean) {
-        sendDataToRXCharacteristic('read');
+        connectToBLEDevice();
+        // sendDataToRXCharacteristic('read');
         sendDataToRXCharacteristic('delete');
-        connectToBLEDevice();
         setUpdate(!update);
-        // handleSubmit();
       } else {
-        sendDataToRXCharacteristic('read');
         connectToBLEDevice();
-        // handleSubmit();
+        sendDataToRXCharacteristic('read');
         setUpdate(!update);
       }
     }, 1000);
@@ -119,36 +123,47 @@ export default function GroupDevice({navigation, route}) {
   }, [update]);
 
   const connectToBLEDevice = async () => {
-    const matchingDevice = allDevices.find(item => {
+    // const matchingDevice = allDevices.find(item => {
+    //   const nameSplit = item.name.split('-');
+    //   const idName = [nameSplit[1]].toString();
+    //   if (Platform.OS === 'android' && item.id === getQR) {
+    //     return true;
+    //   } else if (Platform.OS === 'ios' && idName === getQR) {
+    //     return true;
+    //   }
+    //   return false;
+    // });
+    // if (matchingDevice) {
+    //   try {
+    //     await connectToDevice(matchingDevice);
+    //     sendDataToRXCharacteristic('read');
+    //     handleSubmit();
+    //   } catch (error) {
+    //     console.error('Error connecting to BLE device:', error);
+    //   }
+    // } else {
+    //   console.log('NOT MATCHING!');
+    // }
+    allDevices.find(item => {
       const nameSplit = item.name.split('-');
       const idName = [nameSplit[1]].toString();
       if (Platform.OS === 'android' && item.id === getQR) {
-        console.log('MATCH IN ANDROID!');
-        return true;
-      } else if (Platform.OS === 'ios' && idName === getQR) {
-        console.log('MATCH IN IOS');
-        return true;
-      }
-
-      return false;
-    });
-
-    if (matchingDevice) {
-      try {
-        await connectToDevice(matchingDevice);
+        connectToDevice(item);
         handleSubmit();
-      } catch (error) {
-        console.error('Error connecting to BLE device:', error);
+        console.log(`QR connected ${item.id}`);
+      } else if (Platform.OS === 'ios' && idName === getQR) {
+        connectToDevice(item);
+        handleSubmit();
+        console.log(`QR connected ${idName}`);
       }
-    } else {
-      console.log('NOT MATCHING!');
-    }
+    });
   };
 
   //QUIT TO HOME PAGE
-  const handleQuit = () => {
-    navigation.goBack();
-  };
+  // const handleQuit = () => {
+  //   navigation.goBack();
+  // };
+
   //CONNECT DEVICES FUNCTION
   const handleRefreshGroup = () => {
     qrArray.forEach((item, index) => {
@@ -157,9 +172,8 @@ export default function GroupDevice({navigation, route}) {
         setGetQR('');
         setGetQR(item);
         setIsRunning(true);
-        // handleSubmit();
-        console.log(item);
-      }, index * 3000);
+        console.log(`QR taken: ${item}`);
+      }, index * timeOut);
     });
   };
   //NAVIGATE TO  QRCODE
@@ -280,13 +294,13 @@ export default function GroupDevice({navigation, route}) {
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
         {/* HEADER */}
-        {isRunning ? (
+        {/* {isRunning ? (
           <Text></Text>
         ) : (
           <TouchableOpacity onPress={handleQuit} style={styles.group__quit}>
             <BackArrow />
           </TouchableOpacity>
-        )}
+        )} */}
         <Text style={styles.group__text}>group devices</Text>
       </View>
       <View style={styles.group__deviceCount}>
@@ -387,7 +401,7 @@ export default function GroupDevice({navigation, route}) {
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
         {/* DEBUG THE DATA */}
-        <View
+        {/* <View
           style={{
             flex: 1,
             justifyContent: 'center',
@@ -396,7 +410,7 @@ export default function GroupDevice({navigation, route}) {
             width: '100%',
           }}>
           <Text>{data}</Text>
-        </View>
+        </View> */}
         <View style={styles.group__content}>
           <View style={styles.group__item_imagelist}>
             {studentInfoArray.map((student, index) => (

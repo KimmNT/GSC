@@ -117,35 +117,48 @@ const connectToBLEDevice = async (
   const cutQR = qrCode.substring(3);
   console.log(cutQR);
 
-  const matchingDevice = devices.find(item => {
+  // const matchingDevice = devices.find(item => {
+  //   const nameSplit = item.name.split('-');
+  //   const idName = [nameSplit[1]].toString();
+
+  //   if (Platform.OS === 'android' && item.id === qrCode) {
+  //     console.log('MATCH IN ANDROID!');
+  //     return true;
+  //   } else if (Platform.OS === 'ios' && idName === cutQR) {
+  //     console.log('MATCH IN IOS');
+  //     return true;
+  //   }
+
+  //   return false;
+  // });
+
+  devices.find(item => {
     const nameSplit = item.name.split('-');
     const idName = [nameSplit[1]].toString();
 
     if (Platform.OS === 'android' && item.id === qrCode) {
-      console.log('MATCH IN ANDROID!');
-      return true;
+      connectToPeripheral(item);
+      closeModal();
     } else if (Platform.OS === 'ios' && idName === cutQR) {
-      console.log('MATCH IN IOS');
-      return true;
+      connectToPeripheral(item);
+      closeModal();
     }
-
-    return false;
   });
 
-  if (matchingDevice) {
-    try {
-      // Replace this with the appropriate method based on your BLE library
-      // For example: await manager.connectToDevice(matchingDevice.id);
-      // console.log('Connected to device:' item.item.name);
-      await connectToPeripheral(matchingDevice);
-      closeModal();
-    } catch (error) {
-      console.error('Error connecting to BLE device:', error);
-      setShowMismatchAlert(true);
-    }
-  } else {
-    setShowMismatchAlert(true);
-  }
+  // if (matchingDevice) {
+  //   try {
+  //     // Replace this with the appropriate method based on your BLE library
+  //     // For example: await manager.connectToDevice(matchingDevice.id);
+  //     // console.log('Connected to device:' item.item.name);
+  //     await connectToPeripheral(matchingDevice);
+  //     closeModal();
+  //   } catch (error) {
+  //     console.error('Error connecting to BLE device:', error);
+  //     setShowMismatchAlert(true);
+  //   }
+  // } else {
+  //   setShowMismatchAlert(true);
+  // }
 };
 const styles = StyleSheet.create({
   modal__alert: {

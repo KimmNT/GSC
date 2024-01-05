@@ -36,6 +36,7 @@ function useBLE() {
   };
   const isDuplicateDevice = (devices, nextDevice) =>
     devices.findIndex(device => nextDevice.id === device.id) > -1;
+
   const startScan = () => {
     console.log('SCANNING');
     bleManager.startDeviceScan(null, null, (error, device) => {
@@ -52,10 +53,11 @@ function useBLE() {
       }
     });
   };
+
   const clearDevices = () => {
     setAllDevices([]);
-    // console.log(allDevices);
   };
+
   const stopDevice = () => {
     console.log('STOP SCANNING');
     bleManager.stopDeviceScan();
