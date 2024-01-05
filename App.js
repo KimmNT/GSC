@@ -22,9 +22,15 @@ const App = () => {
   return (
     <DeviceInfoProvider>
       <StudentInfoProvider>
+<<<<<<< HEAD
+        <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
+        {/* <Routing /> */}
+        {/* <WeirdCom /> */}
+=======
         <SafeAreaProvider>
           {isSplash ? <Splash /> : <Routing />}
         </SafeAreaProvider>
+>>>>>>> f8badbc05c02456beabc28be06d2eeedcea81932
       </StudentInfoProvider>
     </DeviceInfoProvider>
 
