@@ -12,37 +12,18 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import NonAvatar from '../../../assets/images/emptyAvatar.png';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
 import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
+import {useQRCodeContext} from '../../ReactContexts/QRcodeContext.js';
+import {useQRListContext} from '../../ReactContexts/QRlistContext.js';
 const res = Dimensions.get('window').height;
 
 export default function TakeStudent({navigation, route}) {
-  const {qrcode, classIdChose} = route.params;
-  const {addDeviceInfo} = useDeviceInfo();
-  const {addStudentInfo, studentInfoArray} = useStudentInfo();
+  const {qrcodeCut, classIdChose} = route.params;
+  const {addStudentInfo} = useStudentInfo();
   const [studentValue, setStudentValue] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(0);
-  const [selectedStudentAvatar, setSelectedStudentAvatar] = useState('');
   const [passed, setPassed] = useState(false);
-  const [deviceInfor, setDeviceInfor] = useState({
-    qrcode: route.params.qrcode,
-    classId: route.params.classIdChose,
-    steps: 0,
-    time: 0,
-    distance: 0,
-    calories: 0,
-    speed__avg: 0,
-    speed__max: 0,
-    jump: 0,
-    flex: 0,
-  });
-  const [studentInfo, setStudentInfo] = useState({
-    qrcode: route.params.qrcode,
-    studentId: 0,
-    studentAva: '',
-    studentName: '',
-  });
+  const {addScannedQRCode} = useQRCodeContext();
+  const {addQRList} = useQRListContext();
 
   //FETCH DATA
   useEffect(() => {
@@ -64,14 +45,34 @@ export default function TakeStudent({navigation, route}) {
   }, []);
 
   const handleTakeStudentInfor = (stuId, stuAVa, stuName) => {
-    addStudentInfo(qrcode, stuId, stuAVa, stuName);
+    console.log(qrcodeCut);
+    addStudentInfo(qrcodeCut, stuId, stuAVa, stuName);
     setPassed(true);
-    addDeviceInfo(deviceInfor);
   };
 
   if (passed) {
+    const steps = 0;
+    const time = 0;
+    const calories = 0;
+    const flex = 0;
+    const distance = 0;
+    const jump = 0;
+    const speed_average = 0;
+    const speed_max = 0;
+    addScannedQRCode(
+      qrcodeCut,
+      steps,
+      time,
+      calories,
+      flex,
+      distance,
+      jump,
+      speed_average,
+      speed_max,
+    );
+    addQRList(qrcodeCut);
     // Move the addStudentInfo call inside the if block
-    navigation.navigate('GroupDevice');
+    navigation.navigate('Group');
   }
 
   return (

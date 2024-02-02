@@ -155,7 +155,8 @@ const BLE = ({
   };
   //NAVIGATE TO GROUP
   const handleGrouping = () => {
-    navigation.navigate('GroupDevice');
+    // navigation.navigate('GroupDevice');
+    navigation.navigate('Group');
   };
   //Calories - Donut chart
   const halfCircle = radius + strokeWidth;

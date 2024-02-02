@@ -15,6 +15,7 @@ import TakeStudent from '../screens/GROUPING/TakeStudent';
 import WeirdCom from '../screens/TEST/WeirdCom';
 import Submiting from '../screens/GROUPING/Submiting';
 import SubmitSuccess from '../screens/GROUPING/SubmitSuccess';
+import Group from '../screens/GROUPING/Group';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,7 @@ export default function Router() {
         <Stack.Screen name="SubmitDone" component={SubmitDone} />
         <Stack.Screen name="Submitting" component={Submiting} />
         <Stack.Screen name="SubmitSuccess" component={SubmitSuccess} />
+        <Stack.Screen name="Group" component={Group} />
         {/* /// */}
         <Stack.Screen name="Weird" component={WeirdCom} />
       </Stack.Navigator>

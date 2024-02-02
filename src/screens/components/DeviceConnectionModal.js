@@ -115,37 +115,21 @@ const connectToBLEDevice = async (
   setShowMismatchAlert,
 ) => {
   const cutQR = qrCode.substring(3);
-  console.log(cutQR);
 
-  const matchingDevice = devices.find(item => {
+  devices.find(item => {
     const nameSplit = item.name.split('-');
     const idName = [nameSplit[1]].toString();
 
     if (Platform.OS === 'android' && item.id === qrCode) {
-      console.log('MATCH IN ANDROID!');
-      return true;
-    } else if (Platform.OS === 'ios' && idName === cutQR) {
-      console.log('MATCH IN IOS');
-      return true;
-    }
-
-    return false;
-  });
-
-  if (matchingDevice) {
-    try {
-      // Replace this with the appropriate method based on your BLE library
-      // For example: await manager.connectToDevice(matchingDevice.id);
-      // console.log('Connected to device:' item.item.name);
-      await connectToPeripheral(matchingDevice);
+      connectToPeripheral(item);
       closeModal();
-    } catch (error) {
-      console.error('Error connecting to BLE device:', error);
+    } else if (Platform.OS === 'ios' && idName === cutQR) {
+      connectToPeripheral(item);
+      closeModal();
+    } else {
       setShowMismatchAlert(true);
     }
-  } else {
-    setShowMismatchAlert(true);
-  }
+  });
 };
 const styles = StyleSheet.create({
   modal__alert: {

@@ -10,20 +10,25 @@ import React, {useState} from 'react';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import ScanArea from '../components/ScanArea.js';
 import BackArrow from '../components/BackArrow.js';
+import {useQRCodeContext} from '../../ReactContexts/QRcodeContext.js';
+import {useQRListContext} from '../../ReactContexts/QRlistContext.js';
 
 const res = Dimensions.get('window').height;
 
 export default function TakeQRCode({navigation, route}) {
   const {classIdChose} = route.params;
   const [scanned, setScanned] = useState('');
+
   const handleQRCodeScanned = event => {
     const {data} = event;
     setScanned(data);
   };
+
   if (scanned != '') {
-    const qrcode = scanned.substring(3);
-    navigation.navigate('TakeStudent', {qrcode, classIdChose});
+    const qrcodeCut = scanned.substring(3);
+    navigation.navigate('TakeStudent', {qrcodeCut, classIdChose});
   }
+
   return (
     <View>
       <View style={styles.qrcode__container}>

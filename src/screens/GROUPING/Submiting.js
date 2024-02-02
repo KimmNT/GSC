@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import React, {useState} from 'react';
-import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
+import {useQRCodeContext} from '../../ReactContexts/QRcodeContext.js';
 import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
 import BackArrow from '../components/BackArrow';
 import NonAva from '../../../assets/images/emptyAvatar.png';
@@ -17,21 +17,16 @@ import axios from 'axios';
 
 const res = Dimensions.get('window').height;
 
-export default function Submiting({navigation}) {
+export default function Submiting({navigation, route}) {
+  const {classIdChose} = route.params;
   const [result, setResult] = useState([]);
-  const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
-    useDeviceInfo();
-  const {studentInfoArray, clearStudentInfoArray, addStudentInfo} =
-    useStudentInfo();
+  const {studentInfoArray} = useStudentInfo();
+  const {scannedQRCodes} = useQRCodeContext();
 
   //COMBINE 2 ARRAY INTO ONE
-  const qrcodeMap = {};
-  for (const item of deviceInfoArray) {
-    qrcodeMap[item.qrcode] = item;
-  }
-  const merchArray = studentInfoArray.map(item1 => ({
+  const combinedArray = scannedQRCodes.map(item1 => ({
     ...item1,
-    ...qrcodeMap[item1.qrcode],
+    ...studentInfoArray.find(item2 => item2.qrcode === item1.qrcode),
   }));
   //FINISH COMBINE
 
@@ -39,7 +34,7 @@ export default function Submiting({navigation}) {
   const apiKey = '251cb836e62cd90f35de2a2fe570133e643a182b';
 
   const handlePushToServer = () => {
-    merchArray.forEach((item, index) => {
+    combinedArray.forEach((item, index) => {
       setTimeout(async () => {
         const currentDate = new Date();
 
@@ -50,15 +45,15 @@ export default function Submiting({navigation}) {
 
         const data = {
           gibbonStudentID: item.stuId,
-          gibbonClassID: item.classId,
+          gibbonClassID: classIdChose,
           time: item.time,
           step: item.steps,
           calories: item.calories,
           flexibitity: item.flex,
           distance: item.distance,
           jump: item.jump,
-          speed_average: item.speed__avg,
-          speed_max: item.speed__max,
+          speed_average: item.speed_average,
+          speed_max: item.speed_max,
           date: formattedDate,
         };
 
@@ -77,6 +72,7 @@ export default function Submiting({navigation}) {
   if (result === 'success') {
     navigation.navigate('SubmitSuccess');
   }
+
   return (
     <View style={styles.submit__container}>
       <View style={styles.submit__headline}>
@@ -86,11 +82,16 @@ export default function Submiting({navigation}) {
           style={styles.submit__quit}>
           <BackArrow />
         </TouchableOpacity>
-        <Text style={styles.submit__text}>save information</Text>
+        <View style={styles.submit__header}>
+          <Text style={styles.submit__text}>save information</Text>
+          <Text style={styles.submit__total_text}>
+            Total: {combinedArray.length}
+          </Text>
+        </View>
       </View>
       <ScrollView>
         <View style={styles.submit__list}>
-          {merchArray.map(item => (
+          {combinedArray.map(item => (
             <View style={styles.submit__item}>
               <View style={styles.submit__item_container}>
                 {item.stuAva === '' ? (
@@ -101,10 +102,14 @@ export default function Submiting({navigation}) {
                     style={styles.submit__item_img}
                   />
                 )}
-                <Text style={styles.submit__item_qrcode}>
-                  {item.qrcode.substring(9, 15)}
-                </Text>
-                <Text style={styles.name}>{item.stuName}</Text>
+                <View style={styles.submit__item_qrcode}>
+                  <Text style={styles.qrcode__value}>
+                    {item.qrcode.substring(9, 15)}
+                  </Text>
+                </View>
+                <View style={styles.submit__item_name}>
+                  <Text style={styles.name__value}>{item.stuName}</Text>
+                </View>
               </View>
             </View>
           ))}
@@ -130,15 +135,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: res * 0.05,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     width: '100%',
     paddingHorizontal: res * 0.04,
+  },
+  submit__header: {
+    alignItems: 'flex-end',
+    gap: res * 0.02,
+    paddingBottom: res * 0.01,
   },
   submit__text: {
     fontSize: res * 0.03,
     textTransform: 'uppercase',
     color: '#000',
     fontWeight: '900',
+  },
+  submit__total_text: {
+    fontSize: res * 0.02,
   },
   submit__list: {
     marginTop: res * 0.05,
@@ -159,35 +172,35 @@ const styles = StyleSheet.create({
   },
   submit__item_container: {
     flexDirection: 'column',
-    gap: res * 0.015,
+    gap: res * 0.02,
     alignItems: 'center',
     width: '100%',
   },
   submit__item_img: {
-    width: res * 0.1,
-    height: res * 0.1,
+    width: res * 0.15,
+    height: res * 0.15,
     resizeMode: 'cover',
-    borderRadius: (res * 0.1) / 2,
+    borderRadius: (res * 0.15) / 2,
   },
   submit__item_qrcode: {
     backgroundColor: '#000',
+    paddingHorizontal: res * 0.02,
+    paddingVertical: res * 0.01,
+    borderRadius: res * 0.005,
+  },
+  qrcode__value: {
     color: '#FFF',
-    padding: res * 0.005,
-    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: res * 0.02,
   },
   submit__item_name: {
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingVertical: res * 0.01,
-    marginTop: res * 0.02,
-    borderRadius: res * 0.01,
-    borderWidth: 1,
-    borderColor: '#000',
+    height: res * 0.05,
+    width: '100%',
   },
-  name: {
-    fontWeight: '600',
-    color: '#000',
+  name__value: {
     textAlign: 'center',
+    fontSize: res * 0.02,
+    fontWeight: '600',
   },
   submit__btn: {
     position: 'absolute',

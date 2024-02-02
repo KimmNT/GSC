@@ -8,18 +8,16 @@ import {
 } from 'react-native';
 import React from 'react';
 import SubmitImg from '../../../assets/images/success.png';
-import {useDeviceInfo} from '../../ReactContexts/DeviceInfoContext';
 import {useStudentInfo} from '../../ReactContexts/StudentInfoContext';
+import {useQRCodeContext} from '../../ReactContexts/QRcodeContext.js';
 
 const res = Dimensions.get('window').height;
 
 export default function SubmitSuccess({navigation}) {
-  const {deviceInfoArray, clearDeviceInfoArray, addDeviceInfo} =
-    useDeviceInfo();
-  const {studentInfoArray, clearStudentInfoArray, addStudentInfo} =
-    useStudentInfo();
+  const {clearScannedQRCode} = useQRCodeContext();
+  const {clearStudentInfoArray} = useStudentInfo();
   const handleBackToScan = () => {
-    clearDeviceInfoArray();
+    clearScannedQRCode();
     clearStudentInfoArray();
     navigation.navigate('BLE');
   };
@@ -56,7 +54,7 @@ const styles = StyleSheet.create({
     fontSize: res * 0.03,
     fontWeight: '600',
     textAlign: 'center',
-    color:"#000",
+    color: '#000',
     paddingHorizontal: res * 0.04,
   },
   success__scan_container: {},

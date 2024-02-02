@@ -7,6 +7,8 @@ import {DeviceInfoProvider} from './src/ReactContexts/DeviceInfoContext';
 import {StudentInfoProvider} from './src/ReactContexts/StudentInfoContext';
 import WeirdCom from './src/screens/TEST/WeirdCom';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {QRCodeProvider} from './src/ReactContexts/QRcodeContext';
+import {QRlistProvider} from './src/ReactContexts/QRlistContext';
 
 //remove warning ViewPropTypes will be removed from React Native,
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
@@ -20,21 +22,15 @@ const App = () => {
     }, 2300);
   });
   return (
-    <DeviceInfoProvider>
-      <StudentInfoProvider>
-<<<<<<< HEAD
-        <SafeAreaProvider>{isSplash ? <Splash /> : <Routing />}</SafeAreaProvider>
-        {/* <Routing /> */}
-        {/* <WeirdCom /> */}
-=======
-        <SafeAreaProvider>
-          {isSplash ? <Splash /> : <Routing />}
-        </SafeAreaProvider>
->>>>>>> f8badbc05c02456beabc28be06d2eeedcea81932
-      </StudentInfoProvider>
-    </DeviceInfoProvider>
-
-    // <WeirdCom />
+    <QRCodeProvider>
+      <QRlistProvider>
+        <StudentInfoProvider>
+          <SafeAreaProvider>
+            {isSplash ? <Splash /> : <Routing />}
+          </SafeAreaProvider>
+        </StudentInfoProvider>
+      </QRlistProvider>
+    </QRCodeProvider>
   );
 };
 
