@@ -45,6 +45,9 @@ export default function GroupDevice({navigation, route}) {
   navigation.setOptions({
     gestureEnabled: false,
   });
+  navigation.setOptions({
+    gestureEnabled: false,
+  });
   const {
     startScan,
     stopDevice,
@@ -75,6 +78,9 @@ export default function GroupDevice({navigation, route}) {
   const [classNameChose, setClassNameChose] = useState(
     'Choose your class/club',
   );
+
+  //TIMEOUT
+  const timeOut = 4500;
 
   //HANDLE SPLIT DATA
   const dataSplited = data.split('|');
@@ -109,14 +115,10 @@ export default function GroupDevice({navigation, route}) {
     const sendInterval = setInterval(() => {
       if (isClean) {
         connectToBLEDevice();
-        // sendDataToRXCharacteristic('read');
-        sendDataToRXCharacteristic('delete');
-        handleSubmit();
         setUpdate(!update);
       } else {
         connectToBLEDevice();
-        sendDataToRXCharacteristic('read');
-        handleSubmit();
+        // handleSubmit();
         setUpdate(!update);
       }
     }, 1000);
@@ -124,41 +126,48 @@ export default function GroupDevice({navigation, route}) {
   }, [update]);
 
   const connectToBLEDevice = async () => {
-    allDevices.find(item => {
+    const matchingDevice = allDevices.find(item => {
       const nameSplit = item.name.split('-');
       const idName = [nameSplit[1]].toString();
       if (Platform.OS === 'android' && item.id === getQR) {
-        connectToDevice(item);
-
-        console.log(`QR connected ${item.id}`);
+        console.log('MATCH IN ANDROID!');
+        return true;
       } else if (Platform.OS === 'ios' && idName === getQR) {
-        connectToDevice(item);
-
-        console.log(`QR connected ${idName}`);
+        console.log('MATCH IN IOS');
+        return true;
       }
+
+      return false;
     });
+
+    if (matchingDevice) {
+      try {
+        await connectToDevice(matchingDevice);
+        handleSubmit();
+      } catch (error) {
+        console.error('Error connecting to BLE device:', error);
+      }
+    } else {
+      console.log('NOT MATCHING!');
+    }
+  };
+
+  //QUIT TO HOME PAGE
+  const handleQuit = () => {
+    navigation.goBack();
   };
   //CONNECT DEVICES FUNCTION
-  // const handleRefreshGroup = () => {
-  //   qrArray.forEach((item, index) => {
-  //     setTimeout(() => {
-  //       disconnectFromDevice();
-  //       setGetQR('');
-  //       setGetQR(item);
-  //       setIsRunning(true);
-  //       console.log(`QR taken: ${item}`);
-  //     }, index * timeOut);
-  //   });
-  // };
-  const handleRefreshGroup = async () => {
-    for (const item of qrArray) {
-      await resetValues(); // Reset values before connecting to a new device
-      await new Promise(resolve => setTimeout(resolve, timeOut)); // Wait for the specified timeOut
-      disconnectFromDevice();
-      setGetQR(item);
-      setIsRunning(true);
-      console.log(`QR taken: ${item}`);
-    }
+  const handleRefreshGroup = () => {
+    qrArray.forEach((item, index) => {
+      setTimeout(() => {
+        disconnectFromDevice();
+        setGetQR('');
+        setGetQR(item);
+        setIsRunning(true);
+        // handleSubmit();
+        console.log(item);
+      }, index * 3000);
+    });
   };
 
   const resetValues = () => {
@@ -296,6 +305,13 @@ export default function GroupDevice({navigation, route}) {
     <View style={styles.group__container}>
       <View style={styles.group__headline}>
         {/* HEADER */}
+        {isRunning ? (
+          <Text></Text>
+        ) : (
+          <TouchableOpacity onPress={handleQuit} style={styles.group__quit}>
+            <BackArrow />
+          </TouchableOpacity>
+        )}
         <Text style={styles.group__text}>group devices</Text>
       </View>
       <View style={styles.group__deviceCount}>
@@ -379,6 +395,17 @@ export default function GroupDevice({navigation, route}) {
       )}
       {/* STUDENT INFORMATION */}
       <ScrollView style={styles.group__boxes}>
+        {/* DEBUG THE DATA */}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#000',
+            width: '100%',
+          }}>
+          <Text>{data}</Text>
+        </View>
         <View style={styles.group__content}>
           <View style={styles.group__item_imagelist}>
             {studentInfoArray.map((student, index) => (
