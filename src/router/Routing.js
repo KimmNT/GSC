@@ -5,7 +5,6 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Submit from '../screens/components/Submit';
 import Success from '../screens/components/Success';
 import BLEScreen from '../screens/BLE';
-import GroupDevice from '../screens/GROUPING/GroupDevice';
 import TakeQRCode from '../screens/GROUPING/TakeQRCode';
 import TakePicture from '../screens/GROUPING/TakePicture';
 import GetClasses from '../screens/SUBMIT/GetClasses';
@@ -28,7 +27,6 @@ export default function Router() {
         <Stack.Screen name="BLE" component={BLEScreen} />
         <Stack.Screen name="Submit" component={Submit} />
         <Stack.Screen name="Success" component={Success} />
-        <Stack.Screen name="GroupDevice" component={GroupDevice} />
         <Stack.Screen name="TakeQRCode" component={TakeQRCode} />
         <Stack.Screen name="TakePicture" component={TakePicture} />
         <Stack.Screen name="TakeStudent" component={TakeStudent} />

@@ -13,7 +13,6 @@ import {
   Platform,
 } from 'react-native';
 import DeviceModal from './components/DeviceConnectionModal';
-import GroupDevice from './GROUPING/GroupDevice';
 import Loading from './components/Loading';
 import useBLE from '../../useBLE';
 import Svg, {G, Circle} from 'react-native-svg';
