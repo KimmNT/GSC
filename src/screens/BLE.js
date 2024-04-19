@@ -89,7 +89,9 @@ const BLE = ({
   useEffect(() => {
     const timer = setInterval(() => {
       setClock(new Date());
-      // sendDataToRXCharacteristic('read');
+      if (connectedDevice) {
+        sendDataToRXCharacteristic('read');
+      }
     }, 5000);
     // Clean up the interval on component unmount
     return () => {
@@ -718,39 +720,46 @@ const BLE = ({
                       </View>
                     </View>
                   </View>
-                  {/* BUTTONS */}
-                  <View style={styles.button__group}>
-                    <TouchableOpacity
-                      style={[styles.button__container, styles.button__save]}
-                      onPress={handleGetStudent}>
-                      <Icon
-                        name="upload"
-                        style={[styles.button__icon, styles.save]}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button__container, styles.button__clear]}
-                      onPress={handleClearData}>
-                      <Icon
-                        name="cleaning-services"
-                        style={[styles.button__icon, styles.clear]}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.button__container,
-                        styles.button__disconnect,
-                      ]}
-                      onPress={handleDisconnect}>
-                      <Icon
-                        name="logout"
-                        style={[styles.button__icon, styles.disconnect]}
-                      />
-                    </TouchableOpacity>
-                  </View>
                 </View>
               </View>
             </ScrollView>
+            {/* Bottom Tab */}
+            <View
+              style={{
+                height: 85,
+                paddingHorizontal: 15,
+                backgroundColor: '#dedbdb',
+                borderTopRightRadius: 12,
+                borderTopLeftRadius: 12,
+              }}>
+              {/* BUTTONS */}
+              <View style={styles.button__group}>
+                <TouchableOpacity
+                  style={[styles.button__container, styles.button__save]}
+                  onPress={handleGetStudent}>
+                  <Icon
+                    name="upload"
+                    style={[styles.button__icon, styles.save]}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button__container, styles.button__clear]}
+                  onPress={handleClearData}>
+                  <Icon
+                    name="cleaning-services"
+                    style={[styles.button__icon, styles.clear]}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button__container, styles.button__disconnect]}
+                  onPress={handleDisconnect}>
+                  <Icon
+                    name="logout"
+                    style={[styles.button__icon, styles.disconnect]}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         ) : (
           <View style={styles.container}>
@@ -991,6 +1000,7 @@ const styles = StyleSheet.create({
     paddingBottom: res * 0.025,
     padding: res * 0.03,
     paddingTop: Platform.OS === 'ios' ? res * 0.05 : 0,
+    height: 80,
   },
   header__text: {
     fontSize: Platform.OS == 'android' ? res * 0.03 : res * 0.04,
@@ -1272,10 +1282,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: res * 0.03,
+    marginTop: res * 0.015,
   },
   button__container: {
-    paddingVertical: res * 0.02,
+    paddingVertical: res * 0.015,
     alignItems: 'center',
     borderRadius: 5,
   },
@@ -1290,14 +1300,14 @@ const styles = StyleSheet.create({
     color: '#43A047',
   },
   button__clear: {
-    width: '20%',
+    width: '18%',
     backgroundColor: '#43A047',
   },
   clear: {
     color: '#FFF',
   },
   button__disconnect: {
-    width: '20%',
+    width: '18%',
     backgroundColor: '#F44336',
   },
   disconnect: {
