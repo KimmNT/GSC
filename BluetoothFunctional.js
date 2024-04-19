@@ -59,6 +59,7 @@ function BluetoothFunctional() {
       }
     });
   };
+
   //STOP SCAN
   const stopScan = () => {
     bleManager.stopDeviceScan();
@@ -102,8 +103,47 @@ function BluetoothFunctional() {
     }
   };
 
+  const connectToDeviceAndroid = async (device, type) => {
+    try {
+      // Assuming you have a function to check if the device is connected
+      const isConnected = await device.isConnected();
+      if (isConnected) {
+        setConnectedDevice(device);
+        await device.discoverAllServicesAndCharacteristics();
+        startStreamingData(device);
+        readDeviceAndroid(device, type);
+      } else {
+        await bleManager.connectToDevice(device.id);
+        startStreamingData(device);
+        readDeviceAndroid(device, type);
+      }
+    } catch (error) {
+      console.error('Failed to connect to BLE device:', error);
+      // Handle the error
+    }
+  };
+
+  const readDeviceAndroid = async (device, type) => {
+    const serviceUUID = IOT__UUID;
+    const characteristicUUID = IOT__RX__CHARACTERISTIC;
+    const valueBase64 = btoa(type); // Encode the data as Base64
+
+    await device.writeCharacteristicWithResponseForService(
+      serviceUUID,
+      characteristicUUID,
+      valueBase64,
+      null, // TransactionId (optional)
+    );
+  };
+
+  const disconnectFromDeviceAndroid = async device => {
+    const isConnected = await device.isConnected();
+    if (isConnected) {
+      bleManager.cancelDeviceConnection(device.id);
+    }
+  };
+
   const readDevice = async data => {
-    console.log('SENDING');
     // connectedDevice ? console.log('true') : console.log('false');
     if (connectedDevice && connectedDevice.isConnected()) {
       try {
@@ -244,7 +284,6 @@ function BluetoothFunctional() {
 
   // Assuming this is part of the BluetoothFunctional module
   const startStreamingData = async device => {
-    console.log('STREAMING');
     if (device) {
       device.monitorCharacteristicForService(
         IOT__UUID,
@@ -262,9 +301,11 @@ function BluetoothFunctional() {
     stopDevice,
     requestPermissions,
     connectToDevice,
+    connectToDeviceAndroid,
     allDevices,
     connectedDevice,
     disconnectFromDevice,
+    disconnectFromDeviceAndroid,
     data,
     readDevice,
     clearDevices,
