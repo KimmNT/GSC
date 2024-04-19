@@ -31,6 +31,7 @@ const App = () => {
         </StudentInfoProvider>
       </QRlistProvider>
     </QRCodeProvider>
+    // <WeirdCom />
   );
 };
 

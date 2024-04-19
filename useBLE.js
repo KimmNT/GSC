@@ -43,7 +43,7 @@ function useBLE() {
       if (error) {
         console.log('Yo, error: ', error);
       }
-      if (device && device.name?.includes('GSC-')) {
+      if (device && device.name?.includes('BBC')) {
         setAllDevices(prevState => {
           if (!isDuplicateDevice(prevState, device)) {
             return [...prevState, device];
@@ -201,6 +201,7 @@ function useBLE() {
     sendDataToRXCharacteristic,
     clearDevices,
     totalDevices,
+    stopScan,
   };
 }
 

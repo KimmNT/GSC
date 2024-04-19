@@ -203,15 +203,22 @@ export default function Group({navigation}) {
   };
 
   const handleClearDevice = qrcode => {
-    setStartCleaning(true);
-    disconnectFromDevice();
-    allDevices.find(item => {
-      const itemNameCut = item.name.substring(4);
-      if (qrcode == itemNameCut) {
-        connectToDevice(item);
-      }
-    });
-    disconnectFromDevice();
+    if (!running) {
+      setStartCleaning(true);
+      disconnectFromDevice();
+      allDevices.find(item => {
+        const itemNameCut = item.name.substring(4);
+        if (qrcode == itemNameCut) {
+          connectToDevice(item);
+        }
+      });
+      disconnectFromDevice();
+    } else {
+      Alert.alert(
+        'Notification',
+        'This action cannot be done while connecting to devices',
+      );
+    }
   };
 
   return (
@@ -232,9 +239,12 @@ export default function Group({navigation}) {
             style={groupStyle.header__classes}>
             <Text style={groupStyle.classes__name}>{classNameChose}</Text>
           </TouchableOpacity>
+          -
         </View>
         {/* LIST */}
-        <ScrollView style={groupStyle.group__boxes}>
+        <ScrollView
+          style={groupStyle.group__boxes}
+          showsVerticalScrollIndicator={false}>
           <View style={groupStyle.group__item_list}>
             <View style={groupStyle.group__item_imagelist}>
               {studentInfoArray.map((student, index) => (

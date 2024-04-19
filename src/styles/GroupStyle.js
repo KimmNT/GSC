@@ -148,7 +148,7 @@ const groupStyle = StyleSheet.create({
   //LIST
   group__boxes: {
     width: '100%',
-    height: '100%',
+    height: '84%',
   },
   group__item_list: {
     flexDirection: 'row',
