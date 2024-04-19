@@ -1,14 +1,13 @@
 import {
   Alert,
   Image,
-  groupStyleheet,
   Text,
   TouchableOpacity,
   View,
-  Button,
   Dimensions,
   ScrollView,
-  StyleSheet,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 //USE CONTEXT
@@ -50,23 +49,31 @@ export default function Group({navigation}) {
     allDevices,
     requestPermissions,
     connectToDevice,
+    connectToDeviceAndroid,
     connectedDevice,
-    data,
     readDevice,
     disconnectFromDevice,
+    disconnectFromDeviceAndroid,
   } = BluetoothFunctional();
   const {scannedQRCodes} = useQRCodeContext();
   const {qrList} = useQRListContext();
-  const [done, setDone] = useState(false);
-  const [running, setRunning] = useState(false);
   const [isGetClassVisibal, setGetClassVisible] = useState(false);
   const [classIdChose, setClassIdChose] = useState('');
   const {studentInfoArray} = useStudentInfo();
   const [startGetting, setStartGetting] = useState(false);
   const [startCleaning, setStartCleaning] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isScanning, setIsScanning] = useState(true);
   const [classNameChose, setClassNameChose] = useState(
     'Choose your class/club',
   );
+
+  const IOT__UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+
+  useEffect(() => {
+    Platform.OS == 'android' && setIsAndroid(true);
+  }, []);
 
   //LOADING BLE DEVICES
   useEffect(() => {
@@ -74,20 +81,27 @@ export default function Group({navigation}) {
     requestPermissions(granted => {
       if (granted) {
         // Start BLE scan when permission is granted
-        startScan();
+        startScan(IOT__UUID);
       } else {
-        console.log('Location permission denied.');
+        Alert.alert(
+          'Warning',
+          'You must grant Location Permission to using this function',
+        );
       }
     });
+
+    setTimeout(() => {
+      stopDevice();
+      setIsScanning(false);
+    }, 10000);
 
     // Cleanup function to stop BLE scan when the component unmounts
     return () => {
       stopDevice();
     };
-  }, [startScan, stopDevice, requestPermissions]);
+  }, []);
 
-  if (connectedDevice) {
-    console.log('CONNECTED HAHA');
+  if (connectedDevice && !isAndroid) {
     if (startGetting) {
       setTimeout(() => {
         readDevice('read');
@@ -148,11 +162,54 @@ export default function Group({navigation}) {
     }
   };
 
+  const handleDeviceActions = async (type, data) => {
+    setIsProcessing(true);
+    for (let i = 0; i < qrList.length; i++) {
+      var QR = qrList[i].qrcode;
+      const hasDevice = allDevices.findIndex(
+        item => item.name.substring(4) == QR,
+      );
+      if (hasDevice !== -1) {
+        const device = allDevices[hasDevice];
+        switch (type) {
+          case 'read':
+            await connectToDeviceAndroid(device, type);
+            break;
+          case 'delete':
+            await connectToDeviceAndroid(data, type);
+            break;
+          case 'disconnect':
+            disconnectFromDeviceAndroid(device);
+            break;
+          default:
+            break;
+        }
+      }
+      // for (let j = 0; j < allDevices.length; j++) {
+      //   var device = allDevices[j].name.substring(4);
+      //   // console.log(device, QR);
+      //   if (device === QR) {
+      //     switch (type) {
+      //       case 'read':
+      //         await connectToDeviceAndroid(allDevices[j], type);
+      //         break;
+      //       case 'delete':
+      //         await connectToDeviceAndroid(data, type);
+      //         break;
+      //       case 'disconnect':
+      //         disconnectFromDeviceAndroid(allDevices[j]);
+      //         break;
+      //     }
+      //   }
+      // }
+    }
+    setIsProcessing(false);
+  };
+
   //HANDLE LOOP GET DEVICE'S VALUE
   const handleGet = async () => {
     const promises = qrList.map(async item => {
       try {
-        setRunning(true);
         await handleGetValue(item.qrcode);
         // Wait for 2 seconds before calling readDevice
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -166,14 +223,21 @@ export default function Group({navigation}) {
     await Promise.all(promises);
 
     // This code will execute when all promises are resolved
-    setDone(true);
+    // setDone(true);
+    setStartGetting(true);
+  };
+
+  const onPressRefresh = () => {
+    if (isAndroid) {
+      handleDeviceActions('read');
+    } else {
+      handleGet();
+    }
   };
 
   //HANDLE DISCONNECT
   const handleDisconnect = () => {
-    disconnectFromDevice();
-    setDone(false);
-    setRunning(false);
+    handleDeviceActions('disconnect');
     setStartGetting(false);
   };
 
@@ -197,21 +261,38 @@ export default function Group({navigation}) {
       <TouchableOpacity
         onPress={() => handleClearDevice(qrcode)}
         style={groupStyle.group__btn_clear}>
-        <Icon name="cleaning-services" style={groupStyle.btn__clear_icon} />
+        {isProcessing ? (
+          <ActivityIndicator color={'white'} />
+        ) : (
+          <Icon name="cleaning-services" style={groupStyle.btn__clear_icon} />
+        )}
       </TouchableOpacity>
     );
   };
 
   const handleClearDevice = qrcode => {
-    setStartCleaning(true);
-    disconnectFromDevice();
-    allDevices.find(item => {
-      const itemNameCut = item.name.substring(4);
-      if (qrcode == itemNameCut) {
-        connectToDevice(item);
+    if (startGetting) {
+      Alert.alert('Warning', 'This action cannot be done while fetching data');
+    } else {
+      if (isAndroid) {
+        allDevices.find(item => {
+          const hasItem = item.name.substring(4) == qrcode;
+          if (hasItem) {
+            handleDeviceActions('delete', item);
+          }
+          // disconnectFromDeviceAndroid(item);
+        });
+      } else {
+        disconnectFromDevice();
+        allDevices.find(item => {
+          const itemNameCut = item.name.substring(4);
+          if (qrcode == itemNameCut) {
+            connectToDevice(item);
+          }
+        });
+        disconnectFromDevice();
       }
-    });
-    disconnectFromDevice();
+    }
   };
 
   return (
@@ -234,7 +315,9 @@ export default function Group({navigation}) {
           </TouchableOpacity>
         </View>
         {/* LIST */}
-        <ScrollView style={groupStyle.group__boxes}>
+        <ScrollView
+          style={groupStyle.group__boxes}
+          showsVerticalScrollIndicator={false}>
           <View style={groupStyle.group__item_list}>
             <View style={groupStyle.group__item_imagelist}>
               {studentInfoArray.map((student, index) => (
@@ -391,7 +474,7 @@ export default function Group({navigation}) {
         <Icon name="add" style={groupStyle.btn__create_icon} />
       </TouchableOpacity>
       {/* GET LATEST, DISCONNECT, UPLOAD */}
-      {done ? (
+      {startGetting ? (
         <TouchableOpacity
           onPress={handleDisconnect}
           style={groupStyle.group__btn_disconnect}>
@@ -402,9 +485,13 @@ export default function Group({navigation}) {
           {scannedQRCodes.length > 0 ? (
             <View style={groupStyle.group__btn_control}>
               <TouchableOpacity
-                onPress={handleGet}
+                onPress={onPressRefresh}
                 style={groupStyle.group__btn_get}>
-                <Icon name="refresh" style={groupStyle.btn__get_icon} />
+                {isProcessing ? (
+                  <ActivityIndicator color={'white'} />
+                ) : (
+                  <Icon name="refresh" style={groupStyle.btn__get_icon} />
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSave}
@@ -424,8 +511,18 @@ export default function Group({navigation}) {
         sendClassId={handleClassId}
         sendClassName={handleClassName}
       />
+      {isScanning && (
+        <View style={groupStyle.loading}>
+          <ActivityIndicator size={'large'} color={'white'}></ActivityIndicator>
+          <Text
+            style={{
+              fontSize: 19,
+              color: 'white',
+            }}>
+            Please wait...
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({});

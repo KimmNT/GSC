@@ -1,6 +1,7 @@
 import {StyleSheet, Dimensions} from 'react-native';
 
 const res = Dimensions.get('window').height;
+const {height, width} = Dimensions.get('window');
 
 const primaryColor = '#4CAF50';
 const boxColor = '#dedbdb';
@@ -13,6 +14,16 @@ const disconnectBtn = '#D24545';
 const clearBtn = '#FE7A36';
 
 const groupStyle = StyleSheet.create({
+  loading: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#rgba(0,0,0,0.5)',
+  },
   group__container: {
     position: 'relative',
     backgroundColor: '#dbdbdc',
@@ -140,6 +151,7 @@ const groupStyle = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: res * 0.015,
     margin: res * 0.01,
+    width: 50,
   },
   btn__clear_icon: {
     color: '#FFF',
@@ -148,7 +160,7 @@ const groupStyle = StyleSheet.create({
   //LIST
   group__boxes: {
     width: '100%',
-    height: '100%',
+    height: '84%',
   },
   group__item_list: {
     flexDirection: 'row',
@@ -246,6 +258,8 @@ const groupStyle = StyleSheet.create({
     paddingVertical: res * 0.005,
     backgroundColor: boxColor,
     borderRadius: res * 0.01,
+    borderWidth: 2,
+    borderColor: '#D1D1D1'
   },
   group__item_notasnumber: {
     alignItems: 'center',
