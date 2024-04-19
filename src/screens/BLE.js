@@ -89,7 +89,7 @@ const BLE = ({
   useEffect(() => {
     const timer = setInterval(() => {
       setClock(new Date());
-      sendDataToRXCharacteristic('read');
+      // sendDataToRXCharacteristic('read');
     }, 5000);
     // Clean up the interval on component unmount
     return () => {
